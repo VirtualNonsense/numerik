@@ -1,9 +1,9 @@
 from simple_numeric_solver import *
+from numpy.typing import *
 
-
-def exper_konv_ord(method: Callable[[int], NDArray],
+def exper_konv_ord(method: Callable[[int], ArrayLike],
                    n0,
-                   m=1) -> NDArray:
+                   m=1) -> ArrayLike:
     """
     :param method: should be a preconfigured solver. The only allowed parameter is the amount of iteration. the return value
     is expected to be the last iteration step
@@ -35,13 +35,13 @@ if __name__ == '__main__':
 
 
     @njit()
-    def example_dgl(t: float, y: NDArray, m=m_0):
+    def example_dgl(t: float, y: ArrayLike, m=m_0):
         y = y[0]
         return -m * (y - np.cos(t))
 
 
     @njit()
-    def example_dgl_(t: float, y: NDArray, m=m_0):
+    def example_dgl_(t: float, y: ArrayLike, m=m_0):
         return -m * np.ones(y.shape[0])
 
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     rk_veb_euler_p = exper_konv_ord(rk_veb_euler, n0, m)
 
 
-    def toString(array: NDArray):
+    def toString(array: ArrayLike):
         return ", ".join([str(k) for k in array])
 
 

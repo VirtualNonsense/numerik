@@ -4,12 +4,12 @@ from numpy.typing import *
 from numba import njit
 
 
-def ex_euler(f: Callable[[float, NDArray], NDArray],
+def ex_euler(f: Callable[[float, ArrayLike], ArrayLike],
              t0: float,
-             y0: NDArray,
+             y0: ArrayLike,
              t_max: float,
              n: int,
-             ) -> Tuple[NDArray, NDArray]:
+             ) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -23,12 +23,12 @@ def ex_euler(f: Callable[[float, NDArray], NDArray],
 
 
 @njit()
-def __ex_euler(f: Callable[[float, NDArray], NDArray],
+def __ex_euler(f: Callable[[float, ArrayLike], ArrayLike],
                t0: float,
-               y0: NDArray,
+               y0: ArrayLike,
                t_max: float,
                n: int,
-               ) -> Tuple[NDArray, NDArray]:
+               ) -> Tuple[ArrayLike, ArrayLike]:
     t = np.linspace(t0, t_max, n)
     y = np.zeros((n, y0.shape[0]))
     y[0] = y0
@@ -45,14 +45,14 @@ def newton_solver(f, f_, y, t, tol):
     return newton_solver(f, f_, y_next, t, tol)
 
 
-def im_euler(f: Callable[[float, NDArray], NDArray],
+def im_euler(f: Callable[[float, ArrayLike], ArrayLike],
              t0: float,
-             y0: NDArray,
+             y0: ArrayLike,
              t_max: float,
              n: int,
-             f_: Callable[[float, NDArray], NDArray],
+             f_: Callable[[float, ArrayLike], ArrayLike],
              tol: float,
-             ) -> Tuple[NDArray, NDArray]:
+             ) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -76,14 +76,14 @@ def im_euler(f: Callable[[float, NDArray], NDArray],
     return t, y.squeeze()
 
 
-def trapez(f: Callable[[float, NDArray], NDArray],
+def trapez(f: Callable[[float, ArrayLike], ArrayLike],
            t0: float,
-           y0: NDArray,
+           y0: ArrayLike,
            t_max: float,
            n: int,
-           f_: Callable[[float, NDArray], NDArray],
+           f_: Callable[[float, ArrayLike], ArrayLike],
            tol: float,
-           ) -> Tuple[NDArray, NDArray]:
+           ) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -107,12 +107,12 @@ def trapez(f: Callable[[float, NDArray], NDArray],
     return t_a, y.squeeze()
 
 
-def veb_euler(f: Callable[[float, NDArray], NDArray],
+def veb_euler(f: Callable[[float, ArrayLike], ArrayLike],
               t0: float,
-              y0: NDArray,
+              y0: ArrayLike,
               t_max: float,
               n: int,
-              ) -> Tuple[NDArray, NDArray]:
+              ) -> Tuple[ArrayLike, ArrayLike]:
     """
     :param f: Differential equation
     :param t0: initial time
@@ -125,12 +125,12 @@ def veb_euler(f: Callable[[float, NDArray], NDArray],
 
 
 @njit()
-def __veb_euler(f: Callable[[float, NDArray], NDArray],
+def __veb_euler(f: Callable[[float, ArrayLike], ArrayLike],
                 t0: float,
-                y0: NDArray,
+                y0: ArrayLike,
                 t_max: float,
                 n: int,
-                ) -> Tuple[NDArray, NDArray]:
+                ) -> Tuple[ArrayLike, ArrayLike]:
     t = np.linspace(t0, t_max, n)
     y = np.zeros((n, y0.shape[0]))
     y[0] = y0
@@ -143,16 +143,16 @@ def __veb_euler(f: Callable[[float, NDArray], NDArray],
     return t, y
 
 
-def runge_kutta(A: NDArray,
-                b: NDArray,
-                c: NDArray,
-                f: Callable[[float, NDArray], NDArray],
+def runge_kutta(A: ArrayLike,
+                b: ArrayLike,
+                c: ArrayLike,
+                f: Callable[[float, ArrayLike], ArrayLike],
                 t0: float,
-                y0: NDArray,
+                y0: ArrayLike,
                 t_max: float,
                 n: int,
-                f_: Optional[Callable[[float, NDArray], NDArray]],
-                tol: Optional[float]) -> Tuple[NDArray, NDArray]:
+                f_: Optional[Callable[[float, ArrayLike], ArrayLike]],
+                tol: Optional[float]) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param A: matrix values from butcher tableau
@@ -188,12 +188,12 @@ def runge_kutta(A: NDArray,
 
 
 def runge_kutta_heun(
-        f: Callable[[float, NDArray], NDArray],
+        f: Callable[[float, ArrayLike], ArrayLike],
         t0: float,
-        y0: NDArray,
+        y0: ArrayLike,
         t_max: float,
         n: int,
-        p: int = 2) -> Tuple[NDArray, NDArray]:
+        p: int = 2) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -217,11 +217,11 @@ def runge_kutta_heun(
     raise Exception("p should be 2 or 3")
 
 
-def runge_kutta_ex_euler(f: Callable[[float, NDArray], NDArray],
+def runge_kutta_ex_euler(f: Callable[[float, ArrayLike], ArrayLike],
                          t0: float,
-                         y0: NDArray,
+                         y0: ArrayLike,
                          t_max: float,
-                         n: int) -> Tuple[NDArray, NDArray]:
+                         n: int) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -236,22 +236,22 @@ def runge_kutta_ex_euler(f: Callable[[float, NDArray], NDArray],
     return runge_kutta(A, b, c, f, t0, y0, t_max, n, None, None)
 
 
-def runge_kutta_veb_euler(f: Callable[[float, NDArray], NDArray],
+def runge_kutta_veb_euler(f: Callable[[float, ArrayLike], ArrayLike],
                           t0: float,
-                          y0: NDArray,
+                          y0: ArrayLike,
                           t_max: float,
-                          n: int) -> Tuple[NDArray, NDArray]:
+                          n: int) -> Tuple[ArrayLike, ArrayLike]:
     A = np.array([[1 / 2]])
     b = np.array([0, 1])
     c = np.array([0, 1 / 2])
     return runge_kutta(A, b, c, f, t0, y0, t_max, n, None, None)
 
 
-def runge_kutta_runge(f: Callable[[float, NDArray], NDArray],
+def runge_kutta_runge(f: Callable[[float, ArrayLike], ArrayLike],
                       t0: float,
-                      y0: NDArray,
+                      y0: ArrayLike,
                       t_max: float,
-                      n: int) -> Tuple[NDArray, NDArray]:
+                      n: int) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -269,11 +269,11 @@ def runge_kutta_runge(f: Callable[[float, NDArray], NDArray],
     return runge_kutta(A, b, c, f, t0, y0, t_max, n, None, None)
 
 
-def runge_kutta_classic(f: Callable[[float, NDArray], NDArray],
+def runge_kutta_classic(f: Callable[[float, ArrayLike], ArrayLike],
                         t0: float,
-                        y0: NDArray,
+                        y0: ArrayLike,
                         t_max: float,
-                        n: int) -> Tuple[NDArray, NDArray]:
+                        n: int) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -291,11 +291,11 @@ def runge_kutta_classic(f: Callable[[float, NDArray], NDArray],
     return runge_kutta(A, b, c, f, t0, y0, t_max, n, None, None)
 
 
-def runge_kutta_3_8(f: Callable[[float, NDArray], NDArray],
+def runge_kutta_3_8(f: Callable[[float, ArrayLike], ArrayLike],
                     t0: float,
-                    y0: NDArray,
+                    y0: ArrayLike,
                     t_max: float,
-                    n: int) -> Tuple[NDArray, NDArray]:
+                    n: int) -> Tuple[ArrayLike, ArrayLike]:
     """
 
     :param f: Differential equation
@@ -323,13 +323,13 @@ if __name__ == '__main__':
 
 
     @njit()
-    def example_dgl(t: float, y: NDArray, m=m_0):
+    def example_dgl(t: float, y: ArrayLike, m=m_0):
         y = y[0]
         return -m * (y - np.cos(t))
 
 
     @njit()
-    def example_dgl_(t: float, y: NDArray, m=m_0):
+    def example_dgl_(t: float, y: ArrayLike, m=m_0):
         return -m * np.ones(y.shape[0])
 
 
