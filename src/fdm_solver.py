@@ -42,14 +42,14 @@ def gen_A_matrix(x: ArrayLike,
     for i in range(N - 1):
         # fill a_i
         if i > 0:
-            A[i][i - 1] = - k((x[i + 1] - h) / 2) / (h * h) - r(x[i + 1]) / (2 * h)
+            A[i][i - 1] = -k(x[i + 1] - h / 2) / (h * h) - r(x[i + 1]) / (2 * h)
 
         # fill b_i
-        A[i][i] = k((x[i + 1] + h) / 2) / (h * h) + k((x[i + 1] + h) / 2) / (h * h)
+        A[i][i] = k(x[i + 1] + h / 2) / (h * h) + k(x[i + 1] - h / 2) / (h * h) + q(x[i + 1])
 
         # fill c_i
         if i < N - 2:
-            A[i][i + 1] = -k((x[i + 1] + h / 2) / 2) / (h * h) + r(x[i + 1]) / 2 * h + q(x[i + 1])
+            A[i][i + 1] = -k(x[i + 1] + h / 2) / (h * h) + r(x[i + 1]) / (2 * h)
     return A
 
 
