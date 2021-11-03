@@ -1,6 +1,7 @@
 from simple_numeric_solver import *
 from numpy.typing import *
 
+
 def exper_konv_ord(method: Callable[[int], ArrayLike],
                    n0,
                    m=1) -> ArrayLike:
@@ -18,7 +19,7 @@ def exper_konv_ord(method: Callable[[int], ArrayLike],
         y_3 = method(4 * n0)
         dy_12 = np.linalg.norm(y_1 - y_2)
         dy_23 = np.linalg.norm(y_2 - y_3)
-        dy = dy_12/dy_23
+        dy = dy_12 / dy_23
         p[i] = np.log(dy) / log_e_2
         n0 *= 2
     return p
@@ -50,10 +51,10 @@ if __name__ == '__main__':
     trap = lambda n: trapez(f=example_dgl_, f_=example_dgl_, t0=t0, y0=y0, t_max=t_end, n=n, tol=tol)[1][-1]
     v_euler = lambda n: veb_euler(f=example_dgl_, t0=t0, y0=y0, t_max=t_end, n=n)[1][-1]
     rk_3_8 = lambda n: runge_kutta_3_8(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n)[1][-1]
-    rk_heun_2= lambda n: runge_kutta_heun(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n, p=2)[1][-1]
-    rk_heun_3= lambda n: runge_kutta_heun(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n, p=3)[1][-1]
-    rk_ex_euler= lambda n: runge_kutta_ex_euler(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n)[1][-1]
-    rk_veb_euler= lambda n: runge_kutta_veb_euler(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n)[1][-1]
+    rk_heun_2 = lambda n: runge_kutta_heun(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n, p=2)[1][-1]
+    rk_heun_3 = lambda n: runge_kutta_heun(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n, p=3)[1][-1]
+    rk_ex_euler = lambda n: runge_kutta_ex_euler(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n)[1][-1]
+    rk_veb_euler = lambda n: runge_kutta_veb_euler(f=example_dgl, t0=t0, y0=y0, t_max=t_end, n=n)[1][-1]
 
     e_euler_p = exper_konv_ord(e_euler, n0, m)
     im_euler_p = exper_konv_ord(i_euler, n0, m)
