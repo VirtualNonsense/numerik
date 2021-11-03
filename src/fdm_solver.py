@@ -8,6 +8,7 @@ def fdm_solver(
         k: Callable[[float], float],
         r: Callable[[float], float],
         q: Callable[[float], float],
+        f: Callable[[Union[float, ArrayLike]], float],
         h: Union[float, Fraction],
         interval: ArrayLike
 ) -> ArrayLike:
@@ -24,7 +25,7 @@ def fdm_solver(
     x = np.arange(start=interval[0],
                   stop=interval[1] + h,  # + h to include interval border
                   step=h)
-
+    f_v = f(x)
     # generate A
     N = x.shape[0] - 1
     A = gen_A_matrix(x, k, r, q, N, h)
@@ -54,4 +55,27 @@ def gen_A_matrix(x: ArrayLike,
 
 
 if __name__ == '__main__':
-    pass
+    n = 16
+
+
+    def k(x: float):
+        return 1
+
+
+    def q(x: float):
+        return 0
+
+
+    def f(x: float):
+        return np.exp(x) - np.exp(-x) + 1
+
+
+    interval = [0, 1]
+    h = (interval[1] - interval[0]) / n
+    x = np.arange(start=interval[0],
+                  stop=interval[1] + h,  # + h to include interval border
+                  step=h)
+
+    # generate A
+    r = q
+    fdm_solver(k, r, q, h, interval)
