@@ -1,5 +1,6 @@
 from numpy.typing import *
 import numpy as np
+from pprint import pprint
 from typing import *
 from fractions import Fraction
 
@@ -28,8 +29,10 @@ def fdm_solver(
     f_v = f(x)
     # generate A
     N = x.shape[0] - 1
-    A = gen_A_matrix(x, k, r, q, N, h)
-    print(A)
+    a, b, c = gen_A_matrix(x, k, r, q, N, h)
+    pprint(a)
+    pprint(b)
+    pprint(c)
 
 
 def gen_A_matrix(x: ArrayLike,
@@ -38,20 +41,23 @@ def gen_A_matrix(x: ArrayLike,
                  q: Callable[[float], float],
                  N: int,
                  h: Union[float, Fraction]) -> ArrayLike:
-    A = np.zeros(shape=[N - 1, N - 1])
+    a = np.zeros(shape=[N - 1])
+    b = np.ones(shape=[N])
+    c = np.zeros(shape=[N - 1])
 
-    for i in range(N - 1):
+    for i in range(N):
         # fill a_i
-        if i > 0:
-            A[i][i - 1] = -k(x[i + 1] - h / 2) / (h * h) - r(x[i + 1]) / (2 * h)
+        if i > 1:
+            a[i - 1] = -k(x[i + 1] - h / 2) / (h * h) - r(x[i + 1]) / (2 * h)
 
         # fill b_i
-        A[i][i] = k(x[i + 1] + h / 2) / (h * h) + k(x[i + 1] - h / 2) / (h * h) + q(x[i + 1])
-
+        if 0 < i < N-1:
+            b[i] = k(x[i + 1] + h / 2) / (h * h) + k(x[i + 1] - h / 2) / (h * h) + q(x[i + 1])
         # fill c_i
         if i < N - 2:
-            A[i][i + 1] = -k(x[i + 1] + h / 2) / (h * h) + r(x[i + 1]) / (2 * h)
-    return A
+            c[i] = -k(x[i + 1] + h / 2) / (h * h) + r(x[i + 1]) / (2 * h)
+
+    return a, b, c
 
 
 if __name__ == '__main__':
@@ -78,4 +84,4 @@ if __name__ == '__main__':
 
     # generate A
     r = q
-    fdm_solver(k, r, q, h, interval)
+    fdm_solver(k, r, q, f, h, interval)

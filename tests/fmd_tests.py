@@ -29,7 +29,7 @@ class FDMSolverTests(unittest.TestCase):
 
 
 class AMatrixTests(unittest.TestCase):
-    def script_example(self):
+    def script_example_test(self):
         n = 16
 
         def k(x: float):
@@ -50,7 +50,7 @@ class AMatrixTests(unittest.TestCase):
         # generate A
         r = q
         N = x.shape[0] - 1
-        A = gen_A_matrix(x, k, r, q, N, h)
+        A, _, _, _ = gen_A_matrix(x, k, r, q, N, h)
         A_ref = [[512, -256, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.],
                  [-256, 512, -256, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.],
                  [0, -256, 512, -256, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.],
