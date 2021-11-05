@@ -3,14 +3,14 @@ import numpy as np
 from src.fdm_solver import *
 
 
-def u(x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
-    return np.exp(-x) + np.exp(x) + 1
-
-
 class FDMSolverTests(unittest.TestCase):
     def __init__(self, n: int = 5):
         super().__init__()
         self.n = n
+
+    @staticmethod
+    def u(x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
+        return np.exp(-x) + np.exp(x) + 1
 
     def test_Ex_2_1_a(self):
         def k(x: float):
@@ -21,11 +21,49 @@ class FDMSolverTests(unittest.TestCase):
 
         interval = [0, 1]
         h = (interval[1] - interval[0]) / self.n
-        x = np.arange(start=interval[0], stop=interval[1], step=h)
+        x = np.arange(start=interval[0], stop=interval[1] + h, step=h)
+        boundary = {
+            interval[0]: (3, dirichlet),
+            interval[1]: (np.exp(1) + 1 / np.exp(1) + 1, dirichlet)
+        }
 
-        solution = u(x)
-        fdm_solver(k, k, k, h, interval)
-        self.assertTrue(True, False)
+        solution = self.u(x)
+        u = fdm_solver(k=k,
+                       r=k,
+                       q=k,
+                       f=f,
+                       h=h,
+                       border=boundary,
+                       interval=interval)
+        epsilon = .01
+        self.assertTrue(((np.abs(solution - u) <= epsilon).all()))
+
+    def test_Ex_2_1_b(self):
+        def k(x: float):
+            return 1
+
+        def f(x: float):
+            return np.exp(x) - np.exp(-x) + 1
+
+        interval = [0, 1]
+        h = (interval[1] - interval[0]) / self.n
+        x = np.arange(start=interval[0], stop=interval[1] + h, step=h)
+
+        boundary = {
+            interval[0]: (3, dirichlet),
+            interval[1]: (2 * np.exp(1) + 1, robin)
+        }
+
+        solution = self.u(x)
+        u = fdm_solver(k=k,
+                       r=k,
+                       q=k,
+                       f=f,
+                       h=h,
+                       border=boundary,
+                       interval=interval)
+        epsilon = .01
+        self.assertTrue(((np.abs(solution - u) <= epsilon).all()))
 
 
 class AMatrixTests(unittest.TestCase):
