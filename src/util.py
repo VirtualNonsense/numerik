@@ -3,7 +3,10 @@ from numpy.typing import *
 from pprint import pprint
 
 
-def thomas_algorithm(a, b, c, d) -> ArrayLike:
+def thomas_algorithm(a: ArrayLike,
+                     b: ArrayLike,
+                     c: ArrayLike,
+                     d: ArrayLike) -> ArrayLike:
     # Dimension des GLS und Speicher für Loesung
     n = d.shape[0]
     x = np.zeros(shape=n)
