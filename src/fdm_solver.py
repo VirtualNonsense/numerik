@@ -24,7 +24,7 @@ def fdm_solver(
         q: Callable[[float], float],
         f: Callable[[Union[float, ArrayLike]], Union[float, ArrayLike]],
         h: Union[float, Fraction],
-        border: Dict[float, Tuple[float, str]],
+        border: Tuple[Tuple[float, str], Tuple[float, str]],
         interval: ArrayLike
 ) -> ArrayLike:
     """
@@ -49,14 +49,14 @@ def fdm_solver(
 
     f_v = f(x)
     # f_v[0] = border[x[0]][0]
-    f_v = np.array([border[x[0]][0], *f_v])
-    f_v[-1] = border[x[-1]][0]
+    f_v = np.array([border[0][0], *f_v])
+    f_v[-1] = border[-1][0]
     # according for boundary conditions
-    if border[x[0]][1] == dirichlet:
+    if border[0][1] == dirichlet:
         a = np.array([*a, 0])
         b = np.array([1, *b])
 
-    if border[x[-1]][1] == dirichlet:
+    if border[-1][1] == dirichlet:
         b = np.array([*b, 1])
         c = np.array([0, *c])
 
@@ -121,10 +121,10 @@ if __name__ == '__main__':
     interval = [0, 1]
     h = calc_h(interval, n)
     x = np.arange(start=interval[0], stop=interval[1] + h, step=h)
-    boundary = {
-        interval[0]: (3, dirichlet),
-        interval[1]: (np.exp(1) + 1 / np.exp(1) + 1, dirichlet)
-    }
+    boundary = (
+        (3, dirichlet),
+        (np.exp(1) + 1 / np.exp(1) + 1, dirichlet)
+    )
 
     solution = u(x)
     u = fdm_solver(k=k,
