@@ -40,7 +40,7 @@ def fdm_solver(
     """
 
     x = np.arange(start=interval[0],
-                  stop=interval[1] + h,  # + h to include interval border
+                  stop=interval[1],
                   step=h)
 
     # generate A
@@ -70,7 +70,6 @@ def gen_A_vectors(x: ArrayLike,
                   q: Callable[[float], float],
                   N: int,
                   h: Union[float, Fraction]) -> ArrayLike:
-
     # TODO: check if that fits other bc than dirichlet
     a = np.zeros(shape=[N - 1])
 
@@ -99,7 +98,7 @@ def calc_h(interval, n):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    n = 4
+    n = 16
 
 
     def u(x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
@@ -120,7 +119,7 @@ if __name__ == '__main__':
 
     interval = [0, 1]
     h = calc_h(interval, n)
-    x = np.arange(start=interval[0], stop=interval[1] + h, step=h)
+    x = np.arange(start=interval[0], stop=interval[1], step=h)
     boundary = (
         (3, dirichlet),
         (np.exp(1) + 1 / np.exp(1) + 1, dirichlet)

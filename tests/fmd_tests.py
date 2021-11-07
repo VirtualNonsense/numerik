@@ -80,9 +80,9 @@ class AMatrixTests(unittest.TestCase):
             return np.exp(x) - np.exp(-x) + 1
 
         interval = [0, 1]
-        h = (interval[1] - interval[0]) / (n - 1)
+        h = calc_h(interval, n)
         x = np.arange(start=interval[0],
-                      stop=interval[1] + h,  # + h to include interval border
+                      stop=interval[1],
                       step=h)
 
         # generate A
