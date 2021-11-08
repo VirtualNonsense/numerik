@@ -4,18 +4,23 @@ from pprint import pprint
 from typing import *
 from fractions import Fraction
 from src.util import thomas_algorithm
+from dataclasses import dataclass
 
-# dirichlet boundary-condition
-# u(x) = 1
-dirichlet = "dirichlet"
 
-# neumann boundary-condition
-# u'(x) = 2
-neumann = "neumann"
+@dataclass
+class BoundaryCondition:
+    location: float
 
-# robin boundary-condition
-# u(x) + 2u'(x) = 132
-robin = "robin"
+
+@dataclass
+class DirichletBoundaryCondition(BoundaryCondition):
+    mu: float
+
+
+@dataclass
+class RobinBoundaryCondition(BoundaryCondition):
+    kappa: float
+    mu: float
 
 
 def fdm_solver(
@@ -24,7 +29,7 @@ def fdm_solver(
         q: Callable[[float], float],
         f: Callable[[Union[float, ArrayLike]], Union[float, ArrayLike]],
         h: Union[float, Fraction],
-        border: Tuple[Tuple[float, str], Tuple[float, str]],
+        border: Tuple[BoundaryCondition, BoundaryCondition],
         interval: ArrayLike
 ) -> ArrayLike:
     """
@@ -48,17 +53,39 @@ def fdm_solver(
     a, b, c = gen_A_vectors(x, k, r, q, N, h)
 
     f_v = f(x)
-    # f_v[0] = border[x[0]][0]
-    f_v = np.array([border[0][0], *f_v])
-    f_v[-1] = border[-1][0]
-    # according for boundary conditions
-    if border[0][1] == dirichlet:
+    if isinstance(border[0], DirichletBoundaryCondition):
+        f_v = np.array([border[0].mu, *f_v])
         a = np.array([*a, 0])
         b = np.array([1, *b])
 
-    if border[-1][1] == dirichlet:
+    if isinstance(border[0], RobinBoundaryCondition):
+        b_0 = 2 * k(interval[0] + h / 2) / (h * h) \
+              + q(interval[0]) \
+              + border[0].kappa * (2 / h + r(interval[0]) / k(interval[0] + h / 2))
+
+        c_0 = -2 * k(interval[0] + h / 2) / (h * h)
+        f_0 = f(interval[0]) \
+              + border[0].mu * (2 / h + r(interval[0]) / k(interval[a] + h / 2))
+
+        b = np.array([b_0, *b])
+        c = np.array([c_0, *c])
+        f_v = np.array([f_0, *f_v])
+
+    if isinstance(border[-1], DirichletBoundaryCondition):
         b = np.array([*b, 1])
         c = np.array([0, *c])
+        f_v[-1] = border[-1].mu
+
+    if isinstance(border[-1], RobinBoundaryCondition):
+        a_n = - 2 * k(interval[-1] - h / 2) / (h * h)
+        b_n = 2 * k(interval[-1] - h / 2) / (h * h) + q(interval[-1]) \
+              + border[-1].kappa * (2 / h - r(interval[-1]) / k(interval[-1] - h / 2))
+        f_n = f(interval[-1]) + border[-1].mu * (2 / h - r(interval[-1]) / k(interval[-1] - h / 2))
+        c = np.array([0, *c])
+
+        f_v[-1] = f_n
+        a[-1] = a_n
+        b = np.array([*b, b_n])
 
     # solving l
     return thomas_algorithm(a, b, c, f_v)[1:]
@@ -121,18 +148,20 @@ if __name__ == '__main__':
     h = calc_h(interval, n)
     x = np.arange(start=interval[0], stop=interval[1], step=h)
     boundary = (
-        (3, dirichlet),
-        (np.exp(1) + 1 / np.exp(1) + 1, dirichlet)
+        DirichletBoundaryCondition(location=interval[0], mu=3),
+        RobinBoundaryCondition(location=interval[1], mu=2 * np.exp(1) + 1, kappa=1),
     )
 
     solution = u(x)
-    u = fdm_solver(k=k,
-                   r=k,
-                   q=k,
-                   f=f,
-                   h=h,
-                   border=boundary,
-                   interval=interval)
+    u = fdm_solver(
+        k=k,
+        r=k,
+        q=k,
+        f=f,
+        h=h,
+        border=boundary,
+        interval=interval
+    )
 
     plt.plot(x, u, label="Aprox. solution", color="r")
     plt.plot(x, solution, label="Solution", color="b")

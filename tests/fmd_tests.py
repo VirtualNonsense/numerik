@@ -22,8 +22,8 @@ class FDMSolverTests(unittest.TestCase):
         h = calc_h(interval, self.n)
         x = np.arange(start=interval[0], stop=interval[1], step=h)
         boundary = (
-            (3, dirichlet),
-            (np.exp(1) + 1 / np.exp(1) + 1, dirichlet)
+            DirichletBoundaryCondition(location=interval[0], mu=3),
+            DirichletBoundaryCondition(location=interval[1], mu=np.exp(1) + 1 / np.exp(1) + 1),
         )
 
         solution = self.u(x)
@@ -50,10 +50,9 @@ class FDMSolverTests(unittest.TestCase):
         x = np.arange(start=interval[0], stop=interval[1], step=h)
 
         boundary = (
-            (3, dirichlet),
-            (2 * np.exp(1) + 1, robin)
+            DirichletBoundaryCondition(location=interval[0], mu=3),
+            RobinBoundaryCondition(location=interval[1], mu=2 * np.exp(1) + 1, kappa=1),
         )
-
         solution = self.u(x)
         u = fdm_solver(k=k,
                        r=k,
