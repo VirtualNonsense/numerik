@@ -29,7 +29,7 @@ def fdm_solver(
         q: Callable[[float], float],
         f: Callable[[Union[float, ArrayLike]], Union[float, ArrayLike]],
         h: Union[float, Fraction],
-        border: Tuple[BoundaryCondition, BoundaryCondition],
+        bc: Tuple[BoundaryCondition, BoundaryCondition],
         interval: ArrayLike
 ) -> ArrayLike:
     """
@@ -38,7 +38,7 @@ def fdm_solver(
     :param q:
     :param f: right side
     :param h: Step size
-    :param border:
+    :param bc: boundary conditions
         key: boundary value
         value: a tuple of the value at the border an the kind of boundary condition
     :type interval: should be filled with the interval boarders
@@ -53,38 +53,36 @@ def fdm_solver(
     a, b, c = gen_A_vectors(x, k, r, q, N, h)
 
     f_v = f(x)
-    if isinstance(border[0], DirichletBoundaryCondition):
-        f_v = np.array([border[0].mu, *f_v])
-        a = np.array([*a, 0])
+    if isinstance(bc[0], DirichletBoundaryCondition):
+        f_v = np.array([bc[0].mu, *f_v])
         b = np.array([1, *b])
+        c = np.array([0, *c])
 
-    if isinstance(border[0], RobinBoundaryCondition):
+    if isinstance(bc[0], RobinBoundaryCondition):
         b_0 = 2 * k(interval[0] + h / 2) / (h * h) \
               + q(interval[0]) \
-              + border[0].kappa * (2 / h + r(interval[0]) / k(interval[0] + h / 2))
+              + bc[0].kappa * (2 / h + r(interval[0]) / k(interval[0] + h / 2))
 
         c_0 = -2 * k(interval[0] + h / 2) / (h * h)
         f_0 = f(interval[0]) \
-              + border[0].mu * (2 / h + r(interval[0]) / k(interval[a] + h / 2))
+              + bc[0].mu * (2 / h + r(interval[0]) / k(interval[0] + h / 2))
 
         b = np.array([b_0, *b])
         c = np.array([c_0, *c])
         f_v = np.array([f_0, *f_v])
 
-    if isinstance(border[-1], DirichletBoundaryCondition):
+    if isinstance(bc[-1], DirichletBoundaryCondition):
+        a = np.array([*a, 0])
         b = np.array([*b, 1])
-        c = np.array([0, *c])
-        f_v[-1] = border[-1].mu
+        f_v[-1] = bc[-1].mu
 
-    if isinstance(border[-1], RobinBoundaryCondition):
+    if isinstance(bc[-1], RobinBoundaryCondition):
         a_n = - 2 * k(interval[-1] - h / 2) / (h * h)
         b_n = 2 * k(interval[-1] - h / 2) / (h * h) + q(interval[-1]) \
-              + border[-1].kappa * (2 / h - r(interval[-1]) / k(interval[-1] - h / 2))
-        f_n = f(interval[-1]) + border[-1].mu * (2 / h - r(interval[-1]) / k(interval[-1] - h / 2))
-        c = np.array([0, *c])
-
+              + bc[-1].kappa * (2 / h - r(interval[-1]) / k(interval[-1] - h / 2))
+        f_n = f(interval[-1]) + bc[-1].mu * (2 / h - r(interval[-1]) / k(interval[-1] - h / 2))
         f_v[-1] = f_n
-        a[-1] = a_n
+        a = np.array([*a, a_n])
         b = np.array([*b, b_n])
 
     # solving l
@@ -159,7 +157,7 @@ if __name__ == '__main__':
         q=k,
         f=f,
         h=h,
-        border=boundary,
+        bc=boundary,
         interval=interval
     )
 
