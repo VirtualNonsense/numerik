@@ -123,7 +123,7 @@ def calc_h(interval, n):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    n = 20
+    n = 200
 
     interval_abc = [0, 1]
     h_abc = calc_h(interval_abc, n)
@@ -223,11 +223,11 @@ if __name__ == '__main__':
         interval=interval_d
     )
 
-    plt.plot(x_abc, u_a, label="Aprox. A", color="r")
-    plt.plot(x_abc, u_b, label="Aprox. B", color="g")
-    plt.plot(x_abc, u_c, label="Aprox. C", color="b")
-    plt.plot(x_d, u_d, label="Aprox. D", color="k")
-    plt.plot(x_abc, solution_abc, "bo", label="Solution abc")
-    plt.plot(x_d, solution_d, "ro", label="Solution d")
+    plt.plot(x_abc, u_a, "ro", label="Aprox. A")
+    plt.plot(x_abc, u_b, "go", label="Aprox. B")
+    plt.plot(x_abc, u_c, "bo", label="Aprox. C")
+    plt.plot(x_d, u_d, "mo", label="Aprox. D")
+    plt.plot(x_abc, solution_abc, "k-", label="Solution abc")
+    plt.plot(x_d, solution_d, "k-", label="Solution d")
     plt.legend()
     plt.show()
