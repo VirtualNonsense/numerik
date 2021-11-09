@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from src.fdm_solver import *
+from src.fdm_bc_solver import *
 from src.util import *
 import logging
 
