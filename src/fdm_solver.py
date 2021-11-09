@@ -123,44 +123,111 @@ def calc_h(interval, n):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    n = 16
+    n = 20
+
+    interval_abc = [0, 1]
+    h_abc = calc_h(interval_abc, n)
 
 
     def u(x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
         return np.exp(-x) + np.exp(x) + 1
 
 
-    def k(x: float):
+    x_abc = np.arange(start=interval_abc[0], stop=interval_abc[1], step=h_abc)
+
+
+    def k_ab(x: float):
         return 1
 
 
-    def q(x: float):
-        return 0
-
-
-    def f(x: float):
+    def f_ab(x: float):
         return np.exp(x) - np.exp(-x) + 1
 
 
-    interval = [0, 1]
-    h = calc_h(interval, n)
-    x = np.arange(start=interval[0], stop=interval[1], step=h)
-    boundary = (
-        DirichletBoundaryCondition(location=interval[0], mu=3),
-        RobinBoundaryCondition(location=interval[1], mu=2 * np.exp(1) + 1, kappa=1),
+    def k_cd(x: float):
+        return 1 + x
+
+
+    def f_cd(x: float):
+        return x * (np.exp(x) - np.exp(-x)) + x + 1
+
+    solution_abc = u(x_abc)
+
+    # a ###########################################################################################################33333
+
+    boundary_a = (
+        DirichletBoundaryCondition(location=interval_abc[0], mu=3),
+        DirichletBoundaryCondition(location=interval_abc[1], mu=np.exp(1) + 1 / np.exp(1) + 1),
     )
 
-    solution = u(x)
-    u = fdm_solver(
-        k=k,
-        r=k,
-        q=k,
-        f=f,
-        h=h,
-        bc=boundary,
-        interval=interval
+    u_a = fdm_solver(k=k_ab,
+                     r=k_ab,
+                     q=k_ab,
+                     f=f_ab,
+                     h=h_abc,
+                     bc=boundary_a,
+                     interval=interval_abc)
+    # b ###########################################################################################################33333
+
+    boundary_b = (
+        DirichletBoundaryCondition(location=interval_abc[0], mu=3),
+        RobinBoundaryCondition(location=interval_abc[1], mu=2 * np.exp(1) + 1, kappa=1),
+    )
+    u_b = fdm_solver(k=k_ab,
+                     r=k_ab,
+                     q=k_ab,
+                     f=f_ab,
+                     h=h_abc,
+                     bc=boundary_b,
+                     interval=interval_abc)
+    # c ###########################################################################################################33333
+    boundary_c = (
+        DirichletBoundaryCondition(location=interval_abc[0], mu=3),
+        RobinBoundaryCondition(
+            location=interval_abc[1],
+            mu=3 * np.exp(1) - 1 / np.exp(1) + 1,
+            kappa=1),
+    )
+    u_c = fdm_solver(k=k_cd,
+                     r=k_cd,
+                     q=k_cd,
+                     f=f_cd,
+                     h=h_abc,
+                     bc=boundary_c,
+                     interval=interval_abc)
+
+    # d ###########################################################################################################33333
+    interval_d = [-1 / 2, 1 / 2]
+    h_d = calc_h(interval_d, n)
+    x_d = np.arange(start=interval_d[0], stop=interval_d[1], step=h_d)
+
+    boundary_d = (
+        RobinBoundaryCondition(
+            location=interval_d[0],
+            mu=(np.exp(1 / 2) - np.exp(-1 / 2)) / 2,
+            kappa=0),
+        RobinBoundaryCondition(
+            location=interval_d[1],
+            mu=(5 * np.exp(1 / 2) - np.exp(-1 / 2)) / 2 + 1,
+            kappa=1),
     )
 
-    plt.plot(x, u, label="Aprox. solution", color="r")
-    plt.plot(x, solution, label="Solution", color="b")
+    solution_d = u(x_d)
+    u_d = fdm_solver(
+        k=k_cd,
+        r=k_cd,
+        q=k_cd,
+        f=f_cd,
+        h=h_d,
+        bc=boundary_d,
+        interval=interval_d
+    )
+
+    plt.plot(x_abc, u_a, label="Aprox. A", color="r")
+    plt.plot(x_abc, u_b, label="Aprox. B", color="g")
+    plt.plot(x_abc, u_c, label="Aprox. C", color="b")
+    plt.plot(x_d, u_d, label="Aprox. D", color="k")
+    plt.plot(x_abc, solution_abc, "bo", label="Solution abc")
+    plt.plot(x_d, solution_d, "ro", label="Solution d")
+    plt.legend()
     plt.show()
