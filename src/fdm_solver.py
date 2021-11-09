@@ -86,7 +86,7 @@ def fdm_solver(
         b = np.array([*b, b_n])
 
     # solving l
-    return thomas_algorithm(a, b, c, f_v)[1:]
+    return thomas_algorithm(a, b, c, f_v)[:-1]
 
 
 def gen_A_vectors(x: ArrayLike,
