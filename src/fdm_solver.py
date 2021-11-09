@@ -109,7 +109,7 @@ def gen_A_vectors(x: ArrayLike,
         b[i] = k(x[i] + h / 2) / (h * h) + k(x[i] - h / 2) / (h * h) + q(x[i])
         if i < N - 1:
             # fill a_i
-            a[i] = -k(x[i + 1] - h / 2) / (h * h) - r(x[i + 1]) / (2 * h)
+            a[i] = -k(x[i] - h / 2) / (h * h) - r(x[i]) / (2 * h)
             # fill c_i
             c[i] = -k(x[i] + h / 2) / (h * h) + r(x[i]) / (2 * h)
 
