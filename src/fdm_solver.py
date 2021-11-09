@@ -54,9 +54,9 @@ def fdm_solver(
 
     f_v = f(x)
     if isinstance(bc[0], DirichletBoundaryCondition):
-        f_v = np.array([bc[0].mu, *f_v])
         b = np.array([1, *b])
         c = np.array([0, *c])
+        f_v = np.array([bc[0].mu, *f_v])
 
     if isinstance(bc[0], RobinBoundaryCondition):
         b_0 = 2 * k(interval[0] + h / 2) / (h * h) \
