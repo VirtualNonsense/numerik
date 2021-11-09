@@ -2,10 +2,11 @@ import unittest
 import numpy as np
 from src.fdm_solver import *
 from src.util import *
+import logging
 
 
 class FDMSolverTests(unittest.TestCase):
-    n = 50
+    n = 500
 
     @staticmethod
     def u(x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
@@ -32,11 +33,11 @@ class FDMSolverTests(unittest.TestCase):
                        q=k,
                        f=f,
                        h=h,
-                       border=boundary,
+                       bc=boundary,
                        interval=interval)
         epsilon = .01
+        logging.debug(solution - u)
         self.assertTrue(((np.abs(solution - u) <= epsilon).all()))
-        # self.assertTrue(True)
 
     def test_Ex_2_1_b(self):
         def k(x: float):
@@ -59,9 +60,73 @@ class FDMSolverTests(unittest.TestCase):
                        q=k,
                        f=f,
                        h=h,
-                       border=boundary,
+                       bc=boundary,
                        interval=interval)
         epsilon = .01
+        logging.debug(solution - u)
+        self.assertTrue(((np.abs(solution - u) <= epsilon).all()))
+
+    def test_Ex_2_1_c(self):
+        def k(x: float):
+            return 1 + x
+
+        def f(x: float):
+            return x * (np.exp(x) - np.exp(-x)) + x + 1
+
+        interval = [0, 1]
+        h = calc_h(interval, self.n)
+        x = np.arange(start=interval[0], stop=interval[1], step=h)
+
+        boundary = (
+            DirichletBoundaryCondition(location=interval[0], mu=3),
+            RobinBoundaryCondition(
+                location=interval[1],
+                mu=3 * np.exp(1) - 1 / np.exp(1) + 1,
+                kappa=1),
+        )
+        solution = self.u(x)
+        u = fdm_solver(k=k,
+                       r=k,
+                       q=k,
+                       f=f,
+                       h=h,
+                       bc=boundary,
+                       interval=interval)
+        epsilon = .01
+        logging.debug(solution - u)
+        self.assertTrue(((np.abs(solution - u) <= epsilon).all()))
+
+    def test_Ex_2_1_d(self):
+        def k(x: float):
+            return 1 + x
+
+        def f(x: float):
+            return x * (np.exp(x) - np.exp(-x)) + x + 1
+
+        interval = [-1/2, 1/2]
+        h = calc_h(interval, self.n)
+        x = np.arange(start=interval[0], stop=interval[1], step=h)
+
+        boundary = (
+            RobinBoundaryCondition(
+                location=interval[0],
+                mu=(np.exp(1/2) - np.exp(-1/2))/2,
+                kappa=0),
+            RobinBoundaryCondition(
+                location=interval[1],
+                mu=(5*np.exp(1/2) - np.exp(-1/2))/2 + 1,
+                kappa=1),
+        )
+        solution = self.u(x)
+        u = fdm_solver(k=k,
+                       r=k,
+                       q=k,
+                       f=f,
+                       h=h,
+                       bc=boundary,
+                       interval=interval)
+        epsilon = .01
+        logging.debug(solution - u)
         self.assertTrue(((np.abs(solution - u) <= epsilon).all()))
 
 
