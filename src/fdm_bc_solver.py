@@ -5,7 +5,7 @@ from typing import *
 import numpy as np
 from numpy.typing import *
 
-from src.util import thomas_algorithm
+from src.util import thomas_algorithm, calc_h
 
 
 @dataclass
@@ -118,10 +118,6 @@ def gen_A_vectors(x: ArrayLike,
         c[i] = -k(x[i] + h / 2) / (h * h) + r(x[i]) / (2 * h)
 
     return a, b, c
-
-
-def calc_h(interval, n):
-    return (interval[1] - interval[0]) / (n - 1)
 
 
 if __name__ == '__main__':

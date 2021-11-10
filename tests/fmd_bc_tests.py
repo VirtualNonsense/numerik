@@ -4,6 +4,8 @@ from src.fdm_bc_solver import *
 from src.util import *
 import logging
 
+from src.util import calc_h
+
 
 class FDMSolverTests(unittest.TestCase):
     n = 500

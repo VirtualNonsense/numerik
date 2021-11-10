@@ -49,3 +49,7 @@ if __name__ == '__main__':
     pprint(x_ref)
     pprint(x_)
     pprint(x_ref - x_)
+
+
+def calc_h(interval, n):
+    return (interval[1] - interval[0]) / (n - 1)
