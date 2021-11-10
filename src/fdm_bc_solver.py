@@ -5,7 +5,7 @@ from typing import *
 import numpy as np
 from numpy.typing import *
 
-from .util import thomas_algorithm
+from src.util import thomas_algorithm
 
 
 @dataclass
