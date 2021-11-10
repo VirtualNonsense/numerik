@@ -34,9 +34,9 @@ def fdm_solver(
         interval: ArrayLike
 ) -> ArrayLike:
     """
-    :param r:
-    :param k:
-    :param q:
+    :param r: convection equation
+    :param k: diffusion equation
+    :param q: reaction equation
     :param f: right side
     :param h: Step size
     :param bc: boundary conditions
@@ -49,11 +49,16 @@ def fdm_solver(
                   stop=interval[1],
                   step=h)
 
-    # generate A
     N = x.shape[0]
+    # generate A as vectors
+    # b c 0 0
+    # a b c 0
+    # 0 a b c
+    # 0 0 a b
     a, b, c = gen_A_vectors(x, k, r, q, N, h)
 
     f_v = f(x)
+    # Account for left boundary condition
     if isinstance(bc[0], DirichletBoundaryCondition):
         b = np.array([1, *b])
         c = np.array([0, *c])
@@ -72,6 +77,7 @@ def fdm_solver(
         c = np.array([c_0, *c])
         f_v = np.array([f_0, *f_v])
 
+    # Account for right boundary condition
     if isinstance(bc[-1], DirichletBoundaryCondition):
         a = np.array([*a, 0])
         b = np.array([*b, 1])
