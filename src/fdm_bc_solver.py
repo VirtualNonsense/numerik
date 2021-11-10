@@ -1,10 +1,11 @@
-from numpy.typing import *
-import numpy as np
-from pprint import pprint
-from typing import *
-from fractions import Fraction
-from src.util import thomas_algorithm
 from dataclasses import dataclass
+from fractions import Fraction
+from typing import *
+
+import numpy as np
+from numpy.typing import *
+
+from .util import thomas_algorithm
 
 
 @dataclass
@@ -95,12 +96,10 @@ def gen_A_vectors(x: ArrayLike,
                   q: Callable[[float], float],
                   N: int,
                   h: Union[float, Fraction]) -> ArrayLike:
-    # TODO: check if that fits other bc than dirichlet
     a = np.zeros(shape=[N - 1])
 
     b = np.ones(shape=[N - 1])
 
-    # TODO: check if that fits other bc than dirichlet
     c = np.zeros(shape=[N - 1])
 
     for i in range(N - 1):
