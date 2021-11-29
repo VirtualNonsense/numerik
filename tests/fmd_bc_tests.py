@@ -7,6 +7,7 @@ import logging
 from src.util import calc_h
 
 
+# noinspection DuplicatedCode
 class FDMSolverTests(unittest.TestCase):
     n = 500
 
