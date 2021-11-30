@@ -146,8 +146,8 @@ if __name__ == '__main__':
     from matplotlib.figure import Figure
     from matplotlib.axes import Axes
 
-    m = 500
-    n = 60
+    m = 80
+    n = 7
     t_start = 0
     t_end = 1
 
@@ -158,16 +158,21 @@ if __name__ == '__main__':
     x = (a, b, n)
 
     sigma = 0
-    u = lambda x, t: np.sin(x) * np.cos(t)
+    u = lambda x, t: np.exp(-2 * t) * np.cos(np.pi * x)
 
-    k = lambda x: 1
-    q = lambda x: k(x)
-    mu_a = lambda t: 0
-    mu_b = lambda t: np.sin(1) * np.cos(t)
+    k = lambda x: 1 + 2 * np.power(x, 2)
+    q = lambda x: x * (1 - x)
 
-    phi = lambda x: np.sin(x)
+    mu_a = lambda t: np.exp(-2 * t)
+    mu_b = lambda t: - np.exp(-2 * t)
 
-    f = lambda x, t: np.sin(x) * (2 * np.cos(t) - np.sin(t))
+    phi = lambda x: np.cos(np.pi * x)
+
+    f = lambda x, t: (np.exp(-2 * t) *
+                      (np.cos(np.pi * x) *
+                       ((2 * np.power(np.pi, 2) - 1) *
+                        np.power(x, 2) + x + np.power(np.pi, 2) - 2)
+                       - np.sin(np.pi * x) * (4 * np.pi * x)))
 
     explicit = fdm_ivbc_solver(space=x,
                                time=t,
@@ -179,33 +184,30 @@ if __name__ == '__main__':
                                phi=phi,
                                sigma=0)
 
-    # crank_nicolson = fdm_ivbc_solver(space=x,
-    #                                  time=t,
-    #                                  k=k,
-    #                                  q=q,
-    #                                  f=f,
-    #                                  mu_a=mu_a,
-    #                                  mu_b=mu_b,
-    #                                  phi=phi,
-    #                                  sigma=1 / 2)
-    #
-    # implicit = fdm_ivbc_solver(space=x,
-    #                            time=t,
-    #                            k=k,
-    #                            q=q,
-    #                            f=f,
-    #                            mu_a=mu_a,
-    #                            mu_b=mu_b,
-    #                            phi=phi,
-    #                            sigma=1)
+    crank_nicolson = fdm_ivbc_solver(space=x,
+                                     time=t,
+                                     k=k,
+                                     q=q,
+                                     f=f,
+                                     mu_a=mu_a,
+                                     mu_b=mu_b,
+                                     phi=phi,
+                                     sigma=1 / 2)
 
-    # plotting
-    h_x = calc_h([a, b], n - 2)
-    h_t = calc_h([t_start, t_end], m - 2)
+    implicit = fdm_ivbc_solver(space=x,
+                               time=t,
+                               k=k,
+                               q=q,
+                               f=f,
+                               mu_a=mu_a,
+                               mu_b=mu_b,
+                               phi=phi,
+                               sigma=1)
 
     X = explicit[1]
     T = explicit[2]
     xx, tt = np.meshgrid(X, T)
+    approx = implicit[0]
     solution = u(xx, tt)
 
     fig: Figure = plt.figure()
@@ -213,15 +215,18 @@ if __name__ == '__main__':
     ax.set_title("solution")
     ax.set_xlabel("space")
     ax.set_ylabel("time")
+    print(np.abs(solution - approx).max())
+    print(approx)
     ax.plot_surface(xx, tt, solution, label="solution")
     ax: Axes = fig.add_subplot(2, 2, 2, projection='3d')
     ax.set_title("approx")
     ax.set_xlabel("space")
     ax.set_ylabel("time")
-    ax.plot_surface(xx, tt, explicit[0], label="Approx. using explicit euler")
+    ax.plot_surface(xx, tt, approx, label="Approx. using explicit euler")
     ax: Axes = fig.add_subplot(2, 2, 3, projection='3d')
     ax.set_title("solution - approx")
     ax.set_xlabel("space")
     ax.set_ylabel("time")
-    ax.plot_surface(xx, tt, solution - explicit[0], label="Approx. using explicit euler")
+    ax.plot_surface(xx, tt, solution - approx, label="Approx. using explicit euler")
+
     plt.show()
