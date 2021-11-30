@@ -102,8 +102,9 @@ class FDMIVBCSolverTests(unittest.TestCase):
                             np.power(x, 2) + x + np.power(np.pi, 2) - 2)
                            - np.sin(np.pi * x) * (4 * np.pi * x)))
 
-        explicit = fdm_ivbc_solver(space=self.x,
-                                   time=self.t,
+
+        explicit = fdm_ivbc_solver(space=self.x_explicit,
+                                   time=self.t_explicit,
                                    k=k,
                                    q=q,
                                    f=f,
@@ -112,8 +113,8 @@ class FDMIVBCSolverTests(unittest.TestCase):
                                    phi=phi,
                                    sigma=0)
 
-        crank_nicolson = fdm_ivbc_solver(space=self.x,
-                                         time=self.t,
+        crank_nicolson = fdm_ivbc_solver(space=self.x_cn,
+                                         time=self.t_cn,
                                          k=k,
                                          q=q,
                                          f=f,
@@ -122,8 +123,8 @@ class FDMIVBCSolverTests(unittest.TestCase):
                                          phi=phi,
                                          sigma=1 / 2)
 
-        implicit = fdm_ivbc_solver(space=self.x,
-                                   time=self.t,
+        implicit = fdm_ivbc_solver(space=self.x_implicit,
+                                   time=self.t_implicit,
                                    k=k,
                                    q=q,
                                    f=f,
@@ -131,7 +132,20 @@ class FDMIVBCSolverTests(unittest.TestCase):
                                    mu_b=mu_b,
                                    phi=phi,
                                    sigma=1)
-        self.assertTrue(False)
+
+        tmp = explicit
+        xx, tt = np.meshgrid(tmp[1], tmp[2])
+        diff_explicit = u(xx, tt) - explicit[0]
+        tmp = crank_nicolson
+        xx, tt = np.meshgrid(tmp[1], tmp[2])
+        diff_crank_nicolson = u(xx, tt) - crank_nicolson[0]
+        tmp = implicit
+        xx, tt = np.meshgrid(tmp[1], tmp[2])
+        diff_implicit = u(xx, tt) - implicit[0]
+        self.assertTrue((np.abs(diff_explicit) < self.epsilon_explicit).all())
+        self.assertTrue((np.abs(diff_crank_nicolson) < self.epsilon_crank_nicolson).all())
+        self.assertTrue((np.abs(diff_implicit) < self.epsilon_implicit).all())
+
 
 
 if __name__ == '__main__':
