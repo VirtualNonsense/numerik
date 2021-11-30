@@ -10,15 +10,14 @@ from src.util import thomas_algorithm, calc_h
 
 def fdm_ivbc_solver(
         space: Tuple[float, float, int],
-        time: Tuple[float, float, float],
+        time: Tuple[float, float, int],
         k: Callable[[Union[float, ArrayLike]], float],
         q: Callable[[Union[float, ArrayLike]], float],
         f: Callable[[Union[float, ArrayLike], Union[float, ArrayLike]], float],
         mu_a: Callable[[Union[float, ArrayLike]], float],
         mu_b: Callable[[Union[float, ArrayLike]], float],
         phi: Callable[[Union[float, ArrayLike]], float],
-        sigma: float
-) -> (ArrayLike, ArrayLike, ArrayLike):
+        sigma: float) -> (ArrayLike, ArrayLike, ArrayLike):
     """
     :param space:
         0: a
@@ -57,27 +56,26 @@ def fdm_ivbc_solver(
     a, b, c = gen_A_vectors(x, k, q, n - 1, h_x)
     # building matrix
     a_h = np.zeros(shape=[b.shape[0], b.shape[0]])
-    one_matrix = np.zeros(shape=a_h.shape)
+    I_h = np.zeros(shape=a_h.shape)
     for i, b_i in enumerate(b):
         if i > 0:
-            a_h[i][i - 1] = a[i-1]
+            a_h[i][i - 1] = a[i - 1]
         if i < b.shape[0] - 1:
             a_h[i][i + 1] = c[i]
         a_h[i][i] = b[i]
-        one_matrix[i][i] = 1
+        I_h[i][i] = 1
     matrix = np.zeros(shape=[t.shape[0], x.shape[0]])
     matrix[:, 0] = mu_a(t)
     matrix[:, -1] = mu_b(t)
     matrix[0, :] = phi(x)
 
-    A = one_matrix + sigma + tau * a_h
-    tmp = one_matrix - tau * (1 - sigma) * a_h
-    for i, t_j in enumerate(t[:]):
+    A = I_h + sigma * tau * a_h
+    tmp = I_h - tau * (1 - sigma) * a_h
+    for i, t_j in enumerate(t):
         if i == 0:
             continue
-        b = tmp @ matrix[i - 1, :] \
-            + tau * (sigma * f(x, t_j) + (1 - sigma) * f(x, t[i - 1]))
-        matrix[i, :] = np.linalg.solve(A, b)
+        b = tmp @ matrix[i - 1, :] + tau * (sigma * f(x, t_j) + (1 - sigma) * f(x, t[i - 1]))
+        matrix[i, 1:-1] = np.linalg.solve(A, b)[1:-1]
     return [matrix, x, t]
 
 
