@@ -146,8 +146,8 @@ if __name__ == '__main__':
     from matplotlib.figure import Figure
     from matplotlib.axes import Axes
 
-    m = 80
-    n = 7
+    m = 800
+    n = 20
     t_start = 0
     t_end = 1
 
@@ -160,7 +160,8 @@ if __name__ == '__main__':
     sigma = 0
     u = lambda x, t: np.exp(-2 * t) * np.cos(np.pi * x)
 
-    k = lambda x: 1 + 2 * np.power(x, 2)
+    #k = lambda x: 1 + 2 * np.power(x, 2)
+    k = lambda x: 1
     q = lambda x: x * (1 - x)
 
     mu_a = lambda t: np.exp(-2 * t)
@@ -168,12 +169,14 @@ if __name__ == '__main__':
 
     phi = lambda x: np.cos(np.pi * x)
 
-    f = lambda x, t: (np.exp(-2 * t) *
-                      (np.cos(np.pi * x) *
-                       ((2 * np.power(np.pi, 2) - 1) *
-                        np.power(x, 2) + x + np.power(np.pi, 2) - 2)
-                       - np.sin(np.pi * x) * (4 * np.pi * x)))
+    # f = lambda x, t: (np.exp(-2 * t) *
+    #                  (np.cos(np.pi * x) *
+    #                   ((2 * np.power(np.pi, 2) - 1) *
+    #                    np.power(x, 2) + x + np.power(np.pi, 2) - 2)
+    #                   - np.sin(np.pi * x) * (4 * np.pi * x)))
 
+    f = lambda x, t: -2 * np.cos(np.pi * x) * np.exp(-2 * t) + np.exp(-2 * t) * np.pi * np.sin(np.pi * x) + np.exp(
+        -2 * t) * np.cos(np.pi * x) * x * (1 - x)
     explicit = fdm_ivbc_solver(space=x,
                                time=t,
                                k=k,
@@ -224,6 +227,13 @@ if __name__ == '__main__':
     ax.set_ylabel("time")
     ax.plot_surface(xx, tt, approx, label="Approx. using explicit euler")
     ax: Axes = fig.add_subplot(2, 2, 3, projection='3d')
+    ax.set_title("solution - approx")
+    ax.set_xlabel("space")
+    ax.set_ylabel("time")
+    ax.plot_surface(xx, tt, solution - approx, label="Approx. using explicit euler")
+
+    fig: Figure = plt.figure()
+    ax: Axes = fig.add_subplot(1, 1, 1, projection='3d')
     ax.set_title("solution - approx")
     ax.set_xlabel("space")
     ax.set_ylabel("time")
