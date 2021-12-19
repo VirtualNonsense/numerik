@@ -127,12 +127,12 @@ def gen_A_vectors(x: ArrayLike,
     c = np.zeros(shape=[N - 1])
 
     for i in range(N - 1):
-        # fill b_i
-        b[i] = k(x[i] + h / 2) / (h * h) + k(x[i] - h / 2) / (h * h) + q(x[i])
         # fill a_i
-        a[i] = -k(x[i] - h / 2) / (h * h)
+        a[i] = -k(x[i] - h / 2) / np.square(h)
         # fill c_i
-        c[i] = -k(x[i] + h / 2) / (h * h)
+        c[i] = -k(x[i] + h / 2) / np.square(h)
+        # fill b_i
+        b[i] = -a[i] - c[i] + q(x[i])
 
     a = np.array([*a, 0])
     b = np.array([1, *b, 1])
