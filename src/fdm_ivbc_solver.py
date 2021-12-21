@@ -1,11 +1,8 @@
-from dataclasses import dataclass
 from fractions import Fraction
 from typing import *
 
 import numpy as np
 from numpy.typing import *
-
-from src.util import thomas_algorithm, calc_h
 
 
 def fdm_ivbc_solver(
@@ -20,13 +17,13 @@ def fdm_ivbc_solver(
         sigma: float) -> (ArrayLike, ArrayLike, ArrayLike):
     """
     :param space:
-        0: a
-        1: b
-        2: N
+        0: a. the "left" boundary in space
+        1: b. the "right" boundary in space
+        2: N + 1. basically the output dimensions
     :param time:
-        0: t_0
-        1: t_end
-        2: M
+        0: t_0. simulation start in time.
+        1: t_end. simulation end in time
+        2: M + 1. basically the output dimensions
     :param k:
     :param q:
     :param f:
@@ -34,14 +31,15 @@ def fdm_ivbc_solver(
         second argument should be time
     :param mu_a: function the describes the boundary condition over time (dirichlet)
     :param mu_b:function the describes the boundary condition over time (dirichlet)
-    :param phi:
+    :param phi: function that describes the initial state at t = 0
     :param sigma: weight for integration
         0: Explicit Euler
         1/2: Trapezoid method
         1: implicit Euler
     """
-    n = space[-1] + 1
-    m = time[-1] + 1
+    # setting up variables
+    n = space[-1]
+    m = time[-1]
     x = np.linspace(space[0],
                     space[1],
                     n,
@@ -50,11 +48,15 @@ def fdm_ivbc_solver(
                     time[1],
                     m,
                     endpoint=True)
+    # space delta
     h_x = x[1] - x[0]
-    tau = t[1] - t[0]
 
+    # time delta
+    tau = t[1] - t[0]
+    # grabbing matrix vectors
     a, b, c = gen_A_vectors(x, k, q, n - 1, h_x)
-    # building matrix
+
+    # building A_h and 1 matrix from vectors to utilize fast matrix routines
     a_h = np.zeros(shape=[b.shape[0], b.shape[0]])
     I_h = np.zeros(shape=a_h.shape)
     for i, b_i in enumerate(b):
@@ -64,24 +66,42 @@ def fdm_ivbc_solver(
             a_h[i][i + 1] = c[i]
         a_h[i][i] = b[i]
         I_h[i][i] = 1
-    matrix = np.zeros(shape=[t.shape[0], x.shape[0]])
-    matrix[:, 0] = mu_a(t)
-    matrix[:, -1] = mu_b(t)
-    matrix[0, :] = phi(x)
 
+    # initializing empty matrix
+    matrix = np.zeros(shape=[t.shape[0], x.shape[0]])
+
+    # left boundary conditions
+    matrix[:, 0] = mu_a(t)
+
+    # right boundary condition
+    matrix[:, -1] = mu_b(t)
+
+    # initial condition for t = 0
+    matrix[0, 1:-1] = phi(x)[1:-1]
+
+    # calculating left side of LGS
     A = I_h + sigma * tau * a_h
+
+    # preparing constant part of right side
     tmp = I_h - tau * (1 - sigma) * a_h
+
+    # solving for every t
     for i, t_j in enumerate(t):
+        # skipping t_0.
+        # This could be done by slicing t, but it would lead to more confusing indizes.
         if i == 0:
             continue
+        # calculating the right side
         b = tmp @ matrix[i - 1, :] + tau * (sigma * f(x, t_j) + (1 - sigma) * f(x, t[i - 1]))
+
+        # placing solution within the free spaces of the matrix
         matrix[i, 1:-1] = np.linalg.solve(A, b)[1:-1]
     return [matrix, x, t]
 
 
 def ArwpFdm1d(
         ort: Tuple[float, float, int],
-        zeit: Tuple[float, float, float],
+        zeit: Tuple[float, float, int],
         k: Callable[[float], float],
         q: Callable[[float], float],
         f: Callable[[float, float], float],
@@ -91,15 +111,14 @@ def ArwpFdm1d(
         sigma: float
 ) -> (ArrayLike, ArrayLike, ArrayLike):
     """
-
     :param ort:
-        0: a
-        1: b
-        2: N + 1
+        0: a. the "left" boundary in space
+        1: b. the "right" boundary in space
+        2: N + 1. basically the output dimensions
     :param zeit:
-        0: t_0
-        1: t_end
-        2: M + 1
+        0: t_0. simulation start in time.
+        1: t_end. simulation end in time
+        2: M + 1. basically the output dimensions
     :param k:
     :param q:
     :param f:
@@ -107,12 +126,21 @@ def ArwpFdm1d(
         second argument should be time
     :param mu_a: function the describes the boundary condition over time (dirichlet)
     :param mu_b:function the describes the boundary condition over time (dirichlet)
-    :param phi:
+    :param phi: function that describes the initial state at t = 0
     :param sigma: weight for integration
         0: Explicit Euler
         1/2: Trapezoid method
         1: implicit Euler
     """
+    return fdm_ivbc_solver(space=ort,
+                           time=zeit,
+                           k=k,
+                           q=q,
+                           f=f,
+                           mu_a=mu_a,
+                           mu_b=mu_b,
+                           phi=phi,
+                           sigma=sigma)
 
 
 def gen_A_vectors(x: ArrayLike,
@@ -120,12 +148,14 @@ def gen_A_vectors(x: ArrayLike,
                   q: Callable[[float], float],
                   N: int,
                   h: Union[float, Fraction]) -> Tuple[ArrayLike, ArrayLike, ArrayLike]:
+    # init empty vectors
     a = np.zeros(shape=[N - 1])
 
     b = np.ones(shape=[N - 1])
 
     c = np.zeros(shape=[N - 1])
 
+    # Iterating over space
     for i in range(N - 1):
         # fill a_i
         a[i] = -k(x[i] - h / 2) / np.square(h)
@@ -134,6 +164,7 @@ def gen_A_vectors(x: ArrayLike,
         # fill b_i
         b[i] = -a[i] - c[i] + q(x[i])
 
+    # expanding vectors to account for dirichlet bc
     a = np.array([*a, 0])
     b = np.array([1, *b, 1])
     c = np.array([0, *c])
@@ -146,37 +177,48 @@ if __name__ == '__main__':
     from matplotlib.figure import Figure
     from matplotlib.axes import Axes
 
-    m = 800
-    n = 20
+    ####################################################################################################################
+    # settings
+    ####################################################################################################################
+    m_p1 = 801
+    n_p1 = 21
     t_start = 0
     t_end = 1
 
     a = 0
     b = 1
 
-    t = (t_start, t_end, m)
-    x = (a, b, n)
+    t = (t_start, t_end, m_p1)
+    x = (a, b, n_p1)
 
-    sigma = 0
-    u = lambda x, t: np.exp(-2 * t) * np.cos(np.pi * x)
+    ####################################################################################################################
+    # problem
+    ####################################################################################################################
+    # u = lambda x, t: np.sin(x) * np.cos(t)
+    #
+    # k = lambda x: 1
+    # q = lambda x: k(x)
+    # mu_a = lambda t: 0
+    # mu_b = lambda t: np.sin(1) * np.cos(t)
+    #
+    # phi = lambda x: np.sin(x)
+    #
+    # f = lambda x, t: np.sin(x) * (2 * np.cos(t) - np.sin(t))
 
-    #k = lambda x: 1 + 2 * np.power(x, 2)
+    u = lambda x, t: np.sin(x) * np.cos(t)
+
     k = lambda x: 1
-    q = lambda x: x * (1 - x)
+    q = lambda x: k(x)
+    mu_a = lambda t: 0
+    mu_b = lambda t: np.sin(1) * np.cos(t)
 
-    mu_a = lambda t: np.exp(-2 * t)
-    mu_b = lambda t: - np.exp(-2 * t)
+    phi = lambda x: np.sin(x)
 
-    phi = lambda x: np.cos(np.pi * x)
+    f = lambda x, t: np.sin(x) * (2 * np.cos(t) - np.sin(t))
 
-    # f = lambda x, t: (np.exp(-2 * t) *
-    #                  (np.cos(np.pi * x) *
-    #                   ((2 * np.power(np.pi, 2) - 1) *
-    #                    np.power(x, 2) + x + np.power(np.pi, 2) - 2)
-    #                   - np.sin(np.pi * x) * (4 * np.pi * x)))
-
-    f = lambda x, t: -2 * np.cos(np.pi * x) * np.exp(-2 * t) + np.exp(-2 * t) * np.pi * np.sin(np.pi * x) + np.exp(
-        -2 * t) * np.cos(np.pi * x) * x * (1 - x)
+    ####################################################################################################################
+    # solve
+    ####################################################################################################################
     explicit = fdm_ivbc_solver(space=x,
                                time=t,
                                k=k,
@@ -213,6 +255,9 @@ if __name__ == '__main__':
     approx = implicit[0]
     solution = u(xx, tt)
 
+    ####################################################################################################################
+    # plot
+    ####################################################################################################################
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot(2, 2, 1, projection='3d')
     ax.set_title("solution")
