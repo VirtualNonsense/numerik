@@ -257,8 +257,9 @@ if __name__ == '__main__':
         X = item[1]
         T = item[2]
         xx, tt = np.meshgrid(X, T)
-        approx = implicit[0]
+        approx = item[0]
         solution = u(xx, tt)
+        print(f"{key}: {np.abs(solution - approx).max()}")
         if draw_solutions:
             fig: Figure = plt.figure()
             fig.suptitle(key)
@@ -267,8 +268,6 @@ if __name__ == '__main__':
             ax.set_title("solution")
             ax.set_xlabel("space")
             ax.set_ylabel("time")
-            print(np.abs(solution - approx).max())
-            print(approx)
             ax.plot_surface(xx, tt, solution, label="solution")
             ax: Axes = fig.add_subplot(1, 2, 2, projection='3d')
             ax.set_title("approx")
