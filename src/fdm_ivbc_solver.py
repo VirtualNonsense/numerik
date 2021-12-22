@@ -197,6 +197,7 @@ if __name__ == '__main__':
 
     draw_solutions = False
     draw_difference = True
+    draw_dgl = False
 
     ####################################################################################################################
     # problem
@@ -283,5 +284,19 @@ if __name__ == '__main__':
             ax.set_xlabel("space")
             ax.set_ylabel("time")
             ax.plot_surface(xx, tt, solution - approx, label="Approx. using explicit euler")
+
+    if draw_dgl:
+        X = implicit[1]
+        T = implicit[2]
+        xx, tt = np.meshgrid(X, T)
+        dgl = f(xx, tt)
+        fig: Figure = plt.figure()
+        fig.suptitle("dgl")
+        fig.canvas.set_window_title(f"dgl")
+        ax: Axes = fig.add_subplot(1, 1, 1, projection='3d')
+        ax.set_title("dgl")
+        ax.set_xlabel("space")
+        ax.set_ylabel("time")
+        ax.plot_surface(xx, tt, dgl, label="Approx. using explicit euler")
 
     plt.show()
