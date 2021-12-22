@@ -195,6 +195,9 @@ if __name__ == '__main__':
     t = (t_start, t_end, m_p1)
     x = (a, b, n_p1)
 
+    draw_solutions = False
+    draw_difference = True
+
     ####################################################################################################################
     # problem
     ####################################################################################################################
@@ -256,30 +259,30 @@ if __name__ == '__main__':
         xx, tt = np.meshgrid(X, T)
         approx = implicit[0]
         solution = u(xx, tt)
-
-        fig: Figure = plt.figure()
-        fig.suptitle(key)
-        fig.canvas.set_window_title(f"{key} - solutions")
-        ax: Axes = fig.add_subplot(1, 2, 1, projection='3d')
-        ax.set_title("solution")
-        ax.set_xlabel("space")
-        ax.set_ylabel("time")
-        print(np.abs(solution - approx).max())
-        print(approx)
-        ax.plot_surface(xx, tt, solution, label="solution")
-        ax: Axes = fig.add_subplot(1, 2, 2, projection='3d')
-        ax.set_title("approx")
-        ax.set_xlabel("space")
-        ax.set_ylabel("time")
-        ax.plot_surface(xx, tt, approx, label="Approx. using explicit euler")
-
-        fig: Figure = plt.figure()
-        fig.suptitle(key)
-        fig.canvas.set_window_title(f"{key} - solution - approx")
-        ax: Axes = fig.add_subplot(1, 1, 1, projection='3d')
-        ax.set_title("solution - approx")
-        ax.set_xlabel("space")
-        ax.set_ylabel("time")
-        ax.plot_surface(xx, tt, solution - approx, label="Approx. using explicit euler")
+        if draw_solutions:
+            fig: Figure = plt.figure()
+            fig.suptitle(key)
+            fig.canvas.set_window_title(f"{key} - solutions")
+            ax: Axes = fig.add_subplot(1, 2, 1, projection='3d')
+            ax.set_title("solution")
+            ax.set_xlabel("space")
+            ax.set_ylabel("time")
+            print(np.abs(solution - approx).max())
+            print(approx)
+            ax.plot_surface(xx, tt, solution, label="solution")
+            ax: Axes = fig.add_subplot(1, 2, 2, projection='3d')
+            ax.set_title("approx")
+            ax.set_xlabel("space")
+            ax.set_ylabel("time")
+            ax.plot_surface(xx, tt, approx, label="Approx. using explicit euler")
+        if draw_difference:
+            fig: Figure = plt.figure()
+            fig.suptitle(key)
+            fig.canvas.set_window_title(f"{key} - solution - approx")
+            ax: Axes = fig.add_subplot(1, 1, 1, projection='3d')
+            ax.set_title("solution - approx")
+            ax.set_xlabel("space")
+            ax.set_ylabel("time")
+            ax.plot_surface(xx, tt, solution - approx, label="Approx. using explicit euler")
 
     plt.show()
