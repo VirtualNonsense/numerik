@@ -197,27 +197,21 @@ if __name__ == '__main__':
     ####################################################################################################################
     # problem
     ####################################################################################################################
-    # u = lambda x, t: np.sin(x) * np.cos(t)
-    #
-    # k = lambda x: 1
-    # q = lambda x: k(x)
-    # mu_a = lambda t: 0
-    # mu_b = lambda t: np.sin(1) * np.cos(t)
-    #
-    # phi = lambda x: np.sin(x)
-    #
-    # f = lambda x, t: np.sin(x) * (2 * np.cos(t) - np.sin(t))
-
     u = lambda x, t: np.sin(x) * np.cos(t)
+    u_dt = lambda x, t: -np.sin(x) * np.sin(t)
+    u_dx = lambda x, t: np.cos(x) * np.cos(t)
+    u_dx2 = lambda x, t: -np.sin(x) * np.cos(t)
 
-    k = lambda x: 1
-    q = lambda x: k(x)
-    mu_a = lambda t: 0
-    mu_b = lambda t: np.sin(1) * np.cos(t)
+    k = lambda x: np.power(x, 3)
+    k_dx = lambda x: 3 * np.power(x, 2)
+    q = lambda x: 1
 
-    phi = lambda x: np.sin(x)
+    mu_a = lambda t: u(a, t)
+    mu_b = lambda t: u(b, t)
 
-    f = lambda x, t: np.sin(x) * (2 * np.cos(t) - np.sin(t))
+    phi = lambda x: u(x, 0)
+
+    f = lambda x, t: u_dt(x, t) - (k_dx(x) * u_dx(x, t) + k(x) * u_dx2(x, t)) + q(x) * u(x, t)
 
     ####################################################################################################################
     # solve
