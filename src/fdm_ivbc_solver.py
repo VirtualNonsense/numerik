@@ -75,18 +75,14 @@ def fdm_ivbc_solver(
     # initializing empty matrix
     matrix = np.zeros(shape=[t.shape[0], x.shape[0]])
 
-    # left boundary conditions
-    matrix[:, 0] = mu_a(t)
-
-    # right boundary condition
-    matrix[:, -1] = mu_b(t)
-
     # initial condition for t = 0
-    matrix[0, 1:-1] = phi(x)[1:-1]
+    matrix[0, :] = phi(x)
 
     # calculating left side of LGS
     A = I_h + sigma * tau * a_h
-
+    # resetting boundary conditions
+    A[0, 0] = 1
+    A[-1, -1] = 1
     # preparing constant part of right side
     tmp = I_h - tau * (1 - sigma) * a_h
 
@@ -98,9 +94,10 @@ def fdm_ivbc_solver(
             continue
         # calculating the right side
         b = tmp @ matrix[i - 1, :] + tau * (sigma * f(x, t_j) + (1 - sigma) * f(x, t[i - 1]))
-
+        b[0] = mu_a(t_j)
+        b[-1] = mu_b(t_j)
         # placing solution within the free spaces of the matrix
-        matrix[i, 1:-1] = np.linalg.solve(A, b)[1:-1]
+        matrix[i, :] = np.linalg.solve(A, b)
     return [matrix, x, t]
 
 
