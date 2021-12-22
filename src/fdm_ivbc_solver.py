@@ -53,8 +53,13 @@ def fdm_ivbc_solver(
 
     # time delta
     tau = t[1] - t[0]
+
     # grabbing matrix vectors
-    a, b, c = gen_A_vectors(x, k, q, n - 1, h_x)
+    a, b, c = gen_A_vectors(x=x,
+                            k=k,
+                            q=q,
+                            N=n - 1,
+                            h=h_x)
 
     # building A_h and 1 matrix from vectors to utilize fast matrix routines
     a_h = np.zeros(shape=[b.shape[0], b.shape[0]])
