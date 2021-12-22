@@ -24,13 +24,13 @@ def fdm_ivbc_solver(
         0: t_0. simulation start in time.
         1: t_end. simulation end in time
         2: M + 1. basically the output dimensions
-    :param k:
-    :param q:
-    :param f:
+    :param k: diffusion equation
+    :param q: reaction equation
+    :param f: right side
         first argument should be space
         second argument should be time
-    :param mu_a: function the describes the boundary condition over time (dirichlet)
-    :param mu_b:function the describes the boundary condition over time (dirichlet)
+    :param mu_a: function the describes the situation in a over time (dirichlet)
+    :param mu_b: function the describes the situation in b over time (dirichlet)
     :param phi: function that describes the initial state at t = 0
     :param sigma: weight for integration
         0: Explicit Euler
@@ -119,13 +119,13 @@ def ArwpFdm1d(
         0: t_0. simulation start in time.
         1: t_end. simulation end in time
         2: M + 1. basically the output dimensions
-    :param k:
-    :param q:
-    :param f:
+    :param k: diffusion equation
+    :param q: reaction equation
+    :param f: right side
         first argument should be space
         second argument should be time
-    :param mu_a: function the describes the boundary condition over time (dirichlet)
-    :param mu_b:function the describes the boundary condition over time (dirichlet)
+    :param mu_a: function the describes the situation in a over time (dirichlet)
+    :param mu_b: function the describes the situation in b over time (dirichlet)
     :param phi: function that describes the initial state at t = 0
     :param sigma: weight for integration
         0: Explicit Euler
@@ -180,7 +180,10 @@ if __name__ == '__main__':
     ####################################################################################################################
     # settings
     ####################################################################################################################
+    # m + 1
     m_p1 = 801
+
+    # n + 1
     n_p1 = 21
     t_start = 0
     t_end = 1
