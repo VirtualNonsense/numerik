@@ -186,16 +186,40 @@ if __name__ == '__main__':
     ####################################################################################################################
     # problem
     ####################################################################################################################
-    u = lambda x, t: np.sin(x) * np.cos(t)
-    u_dt = lambda x, t: -np.sin(x) * np.sin(t)
-    u_dx = lambda x, t: np.cos(x) * np.cos(t)
-    u_dx2 = lambda x, t: -np.sin(x) * np.cos(t)
 
-    n = 4
-    k = lambda x: np.power(x, n) + 100
-    k_dx = lambda x: n * np.power(x, n - 1)
-    q = lambda x: np.sin(x)
+    # Example (a)
+    # u = lambda x, t: np.sin(x) * np.cos(t)
+    # u_dt = lambda x, t: -np.sin(x) * np.sin(t)
+    # u_dx = lambda x, t: np.cos(x) * np.cos(t)
+    # u_dx2 = lambda x, t: -np.sin(x) * np.cos(t)
 
+    # k = lambda x: 1
+    # k_dx = lambda x: 0
+    # q = lambda x: 1
+
+    # Example (b)
+    u = lambda x, t: np.exp(-2 * t) * np.cos(np.pi * x)
+    u_dt = lambda x, t: -2 * np.exp(-2 * t) * np.cos(np.pi * x)
+    u_dx = lambda x, t: -np.pi * np.exp(-2 * t) * np.sin(np.pi * x)
+    u_dx2 = lambda x, t: -np.pi * np.pi * np.exp(-2 * t) * np.cos(np.pi * x)
+    n = 2
+
+    k = lambda x: 1 + 2 * np.power(x, n)
+    k_dx = lambda x: 2 * n * np.power(x, n - 1)
+    q = lambda x: (1 - x) * x
+
+    # Playground
+    # u = lambda x, t: np.sin(x) * np.cos(t)
+    # u_dt = lambda x, t: -np.sin(x) * np.sin(t)
+    # u_dx = lambda x, t: np.cos(x) * np.cos(t)
+    # u_dx2 = lambda x, t: -np.sin(x) * np.cos(t)
+
+    # n = 4
+    # k = lambda x: 1 + np.power(x, n)
+    # k_dx = lambda x: n * np.power(x, n - 1)
+    # q = lambda x: np.sin(x)
+
+    # do not change
     mu_a = lambda t: u(a, t)
     mu_b = lambda t: u(b, t)
 
