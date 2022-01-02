@@ -184,28 +184,6 @@ if __name__ == '__main__':
     from matplotlib.axes import Axes
 
     ####################################################################################################################
-    # settings
-    ####################################################################################################################
-    # m + 1
-    m_p1 = 41
-
-    # n + 1
-    n_p1 = 11
-
-    t_start = 0
-    t_end = 1
-
-    a = 0
-    b = 1
-
-    t = (t_start, t_end, m_p1)
-    x = (a, b, n_p1)
-
-    draw_solutions = False
-    draw_difference = True
-    draw_dgl = False
-
-    ####################################################################################################################
     # problem
     ####################################################################################################################
     u = lambda x, t: np.sin(x) * np.cos(t)
@@ -226,10 +204,46 @@ if __name__ == '__main__':
     f = lambda x, t: u_dt(x, t) - (k_dx(x) * u_dx(x, t) + k(x) * u_dx2(x, t)) + q(x) * u(x, t)
 
     ####################################################################################################################
+    # settings
+    ####################################################################################################################
+
+    # n + 1, space discretization
+    # n_p1 = 11
+    n_p1 = 41
+
+    a = 0
+    b = 1
+    hx = (b - a) / (n_p1 - 1)
+    x = (a, b, n_p1)
+
+    # time discretization
+    t_start = 0
+    t_end = 1
+    # default for explicit euler
+    kmax = k(np.linspace(a, b, 1000, endpoint=True)).max()
+    tau_ex = np.power(hx, 2) / (2 * kmax)
+    m_ex = int(np.ceil((t_end - t_start) / tau_ex) + 1)
+    t_explicit = (t_start, t_end, m_ex)
+
+    # default for implicit euler
+    tau_im = np.power(hx, 2)
+    m_im = int(np.ceil((t_end - t_start) / tau_im) + 1)
+    t_implicit = (t_start, t_end, m_im)
+
+    # default for Crank-N
+    tau_cn = hx
+    m_cn = int(np.ceil((t_end - t_start) / tau_cn) + 1)
+    t_cn = (t_start, t_end, m_cn)
+
+    draw_solutions = False
+    draw_difference = True
+    draw_dgl = False
+
+    ####################################################################################################################
     # solve
     ####################################################################################################################
     explicit = fdm_ivbc_solver(space=x,
-                               time=t,
+                               time=t_explicit,
                                k=k,
                                q=q,
                                f=f,
@@ -239,7 +253,7 @@ if __name__ == '__main__':
                                sigma=0)
 
     crank_nicolson = fdm_ivbc_solver(space=x,
-                                     time=t,
+                                     time=t_cn,
                                      k=k,
                                      q=q,
                                      f=f,
@@ -249,7 +263,7 @@ if __name__ == '__main__':
                                      sigma=1 / 2)
 
     implicit = fdm_ivbc_solver(space=x,
-                               time=t,
+                               time=t_implicit,
                                k=k,
                                q=q,
                                f=f,
