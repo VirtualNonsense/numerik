@@ -309,7 +309,7 @@ if __name__ == '__main__':
         if draw_solutions:
             fig: Figure = plt.figure()
             fig.suptitle(key)
-            fig.canvas.set_window_title(f"{key} - solutions")
+            fig.canvas.manager.set_window_title(f"{key} - solutions")
             ax: Axes = fig.add_subplot(1, 2, 1, projection='3d')
             ax.set_title("solution")
             ax.set_xlabel("space")
@@ -323,7 +323,7 @@ if __name__ == '__main__':
         if draw_difference:
             fig: Figure = plt.figure()
             fig.suptitle(key)
-            fig.canvas.set_window_title(f"{key} - solution - approx")
+            fig.canvas.manager.set_window_title(f"{key} - solution - approx")
             ax: Axes = fig.add_subplot(1, 1, 1, projection='3d')
             ax.set_title("solution - approx")
             ax.set_xlabel("space")
@@ -337,7 +337,7 @@ if __name__ == '__main__':
         dgl = f(xx, tt)
         fig: Figure = plt.figure()
         fig.suptitle("dgl")
-        fig.canvas.set_window_title(f"dgl")
+        fig.canvas.manager.set_window_title(f"dgl")
         ax: Axes = fig.add_subplot(1, 1, 1, projection='3d')
         ax.set_title("dgl")
         ax.set_xlabel("space")
