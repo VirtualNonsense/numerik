@@ -87,8 +87,6 @@ def fdm_ivbc_solver(
     # resetting boundary conditions
     A[0, 0] = 1
     A[-1, -1] = 1
-    # preparing constant part of right side
-    tmp = I_h - tau * (1 - sigma) * a_h
 
     # solving for every t
     for i, t_j in enumerate(t):
