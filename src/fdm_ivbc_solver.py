@@ -305,7 +305,7 @@ if __name__ == '__main__':
         xx, tt = np.meshgrid(X, T)
         approx = item[0]
         solution = u(xx, tt)
-        print(f"{key}: {np.abs(solution - approx).max()}")
+        print(f"{key}: h={X[1] - X[0]} tau={T[1] - T[0]} error={np.abs(solution - approx).max()}")
         if draw_solutions:
             fig: Figure = plt.figure()
             fig.suptitle(key)
