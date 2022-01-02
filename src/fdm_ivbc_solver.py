@@ -80,6 +80,10 @@ def fdm_ivbc_solver(
 
     # calculating left side of LGS
     A = I_h + sigma * tau * a_h
+
+    # preparing constant part of right side
+    tmp = I_h - tau * (1 - sigma) * a_h
+
     # resetting boundary conditions
     A[0, 0] = 1
     A[-1, -1] = 1
@@ -94,6 +98,7 @@ def fdm_ivbc_solver(
             continue
         # calculating the right side
         b = tmp @ matrix[i - 1, :] + tau * (sigma * f(x, t_j) + (1 - sigma) * f(x, t[i - 1]))
+        # resetting boundary conditions
         b[0] = mu_a(t_j)
         b[-1] = mu_b(t_j)
         # placing solution within the free spaces of the matrix
@@ -160,11 +165,12 @@ def gen_A_vectors(x: ArrayLike,
     # Iterating over space
     for i in range(N - 1):
         # fill a_i
-        a[i] = -k(x[i+1] - h / 2) / np.square(h)
+        # JS Index i+1 !
+        a[i] = -k(x[i + 1] - h / 2) / np.square(h)
         # fill c_i
-        c[i] = -k(x[i+1] + h / 2) / np.square(h)
+        c[i] = -k(x[i + 1] + h / 2) / np.square(h)
         # fill b_i
-        b[i] = -a[i] - c[i] + q(x[i+1])
+        b[i] = -a[i] - c[i] + q(x[i + 1])
 
     # expanding vectors to account for dirichlet bc
     a = np.array([*a, 0])
