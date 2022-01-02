@@ -160,11 +160,11 @@ def gen_A_vectors(x: ArrayLike,
     # Iterating over space
     for i in range(N - 1):
         # fill a_i
-        a[i] = -k(x[i] - h / 2) / np.square(h)
+        a[i] = -k(x[i+1] - h / 2) / np.square(h)
         # fill c_i
-        c[i] = -k(x[i] + h / 2) / np.square(h)
+        c[i] = -k(x[i+1] + h / 2) / np.square(h)
         # fill b_i
-        b[i] = -a[i] - c[i] + q(x[i])
+        b[i] = -a[i] - c[i] + q(x[i+1])
 
     # expanding vectors to account for dirichlet bc
     a = np.array([*a, 0])
@@ -183,10 +183,10 @@ if __name__ == '__main__':
     # settings
     ####################################################################################################################
     # m + 1
-    m_p1 = 801
+    m_p1 = 41
 
     # n + 1
-    n_p1 = 21
+    n_p1 = 11
 
     t_start = 0
     t_end = 1
@@ -209,9 +209,10 @@ if __name__ == '__main__':
     u_dx = lambda x, t: np.cos(x) * np.cos(t)
     u_dx2 = lambda x, t: -np.sin(x) * np.cos(t)
 
-    k = lambda x: np.power(x, 3)
-    k_dx = lambda x: 3 * np.power(x, 2)
-    q = lambda x: 1
+    n = 4
+    k = lambda x: np.power(x, n) + 100
+    k_dx = lambda x: n * np.power(x, n - 1)
+    q = lambda x: np.sin(x)
 
     mu_a = lambda t: u(a, t)
     mu_b = lambda t: u(b, t)
