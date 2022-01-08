@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     sig_dict = {
         0: "explicit euler",
-        1/2: "crank nicolson",
+        1 / 2: "crank nicolson",
         1: "implicit euler"
     }
     ####################################################################################################################
@@ -149,7 +149,8 @@ if __name__ == '__main__':
                 else:
                     param, _ = curve_fit(polynom_2, hx_list, error_values)
                     print(f"{param[0]}x^2 + {param[1]}x + {param[2]}")
-                    fits[sigma][tau_rule] = (polynom_2(hx_list, *param), f"{param[0]:.3e}x^2 + {param[1]:.3e}x + {param[2]:.3e}")
+                    fits[sigma][tau_rule] = (
+                    polynom_2(hx_list, *param), f"{param[0]:.3e}x^2 + {param[1]:.3e}x + {param[2]:.3e}")
 
     ####################################################################################################################
     # plot
