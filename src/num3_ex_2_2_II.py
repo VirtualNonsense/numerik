@@ -103,7 +103,7 @@ if __name__ == '__main__':
                                                 mu_a=mu_a,
                                                 mu_b=mu_b,
                                                 phi=phi,
-                                                sigma=0)
+                                                sigma=sig)
 
                 # extract values
                 approx = approx_result[0]
