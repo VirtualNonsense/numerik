@@ -37,10 +37,9 @@ if __name__ == '__main__':
     draw_fit = True
 
     # n + 1, space discretization
-    # n_p1 = 11
-    n_p1_start = 60
-    n_p1_end = 5
-    n_p1_steps = 20
+    n_p1_start = 61
+    n_p1_end = 11
+    n_p1_steps = 15
     a = 0
     b = 1
     sigmas = [0, 1 / 2, 1]
