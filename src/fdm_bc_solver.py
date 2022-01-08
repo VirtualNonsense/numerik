@@ -6,22 +6,7 @@ import numpy as np
 from numpy.typing import *
 
 from src.util import thomas_algorithm, calc_h
-
-
-@dataclass
-class BoundaryCondition:
-    location: float
-
-
-@dataclass
-class DirichletBoundaryCondition(BoundaryCondition):
-    mu: float
-
-
-@dataclass
-class RobinBoundaryCondition(BoundaryCondition):
-    kappa: float
-    mu: float
+from boundary_condition import *
 
 
 def fdm_solver(
@@ -109,7 +94,6 @@ def gen_A_vectors(x: ArrayLike,
     c = np.zeros(shape=[N - 1])
 
     for i in range(N - 1):
-
         # fill b_i
         b[i] = k(x[i] + h / 2) / (h * h) + k(x[i] - h / 2) / (h * h) + q(x[i])
         # fill a_i
@@ -150,6 +134,7 @@ if __name__ == '__main__':
 
     def f_cd(x: float):
         return x * (np.exp(x) - np.exp(-x)) + x + 1
+
 
     solution_abc = u(x_abc)
 
