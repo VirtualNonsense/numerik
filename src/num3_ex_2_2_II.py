@@ -129,7 +129,7 @@ if __name__ == '__main__':
         fig: Figure = plt.figure(f"{sig_dict[sigma]} (sigma: {sigma})")
         fig.suptitle(f"{sig_dict[sigma]}")
         # creating sub figures
-        axs: Union[Axes, List[Axes]] = fig.subplots(len(dictionary), 1, sharex=True)
+        axs: Union[Axes, List[Axes]] = fig.subplots(len(dictionary), 1, sharex='col')
 
         # Setting x_label for the flor plot
         if isinstance(axs, Axes):
