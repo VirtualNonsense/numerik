@@ -7,6 +7,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from matplotlib.figure import Figure
     from matplotlib.axes import Axes
+    from scipy.optimize import curve_fit
 
     ####################################################################################################################
     # problem
@@ -33,6 +34,7 @@ if __name__ == '__main__':
     ####################################################################################################################
     # settings
     ####################################################################################################################
+    draw_fit = True
 
     # n + 1, space discretization
     # n_p1 = 11
@@ -119,6 +121,36 @@ if __name__ == '__main__':
                     errors[sig][key] = []
                 errors[sig][key].append(np.abs(solution - approx).max())
 
+    # converting hx_list to np array
+    hx_list = np.array(hx_list)
+    ####################################################################################################################
+    # fitting data with expected curves
+    ####################################################################################################################
+    # structure
+    # { "τ = h": {0: ([fit_0 .... fit_n-1], "ax^2 + bx + c") } }
+    fits: Dict[int, Dict[str, Tuple[list, str]]] = {i: {} for i in sigmas}
+    if draw_fit:
+        def linear(x, m, t):
+            return m * x + t
+
+
+        def polynom_2(x, a, b, c):
+            return a * np.square(x) + b * x + c
+
+
+        for _, (sigma, dictionary) in enumerate(errors.items()):
+
+            # Iterating over every the different rules for T
+            for r, (tau_rule, error_values) in enumerate(dictionary.items()):
+                if sigma == 1 and tau_rule == tau_1_label:
+                    param, _ = curve_fit(linear, hx_list, error_values)
+                    print(f"{param[0]}x + {param[1]}")
+                    fits[sigma][tau_rule] = (linear(hx_list, *param), f"{param[0]:.3e}x + {param[1]:.3e}")
+                else:
+                    param, _ = curve_fit(polynom_2, hx_list, error_values)
+                    print(f"{param[0]}x^2 + {param[1]}x + {param[2]}")
+                    fits[sigma][tau_rule] = (polynom_2(hx_list, *param), f"{param[0]:.3e}x^2 + {param[1]:.3e}x + {param[2]:.3e}")
+
     ####################################################################################################################
     # plot
     ####################################################################################################################
@@ -146,5 +178,8 @@ if __name__ == '__main__':
             ax.set_xlabel("h")
             ax.set_ylabel("max(abs(error))")
             ax.plot(hx_list, error_values, label=tau_rule)
+            if draw_fit:
+                fit, label = fits[sigma][tau_rule]
+                ax.plot(hx_list, fit, color='red', linestyle='dashed', label=f"fit: {label}")
             ax.legend()
     plt.show()
