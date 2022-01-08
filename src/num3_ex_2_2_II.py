@@ -144,7 +144,7 @@ if __name__ == '__main__':
             else:
                 ax = axs[r]
             ax.set_xlabel("h")
-            ax.set_ylabel("absolute max error")
+            ax.set_ylabel("max(abs(error))")
             ax.plot(hx_list, error_values, label=tau_rule)
             ax.legend()
     plt.show()
