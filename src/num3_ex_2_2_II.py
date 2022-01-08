@@ -178,7 +178,7 @@ if __name__ == '__main__':
                 ax = axs[r]
             ax.set_xlabel("h")
             ax.set_ylabel("max(abs(error))")
-            ax.plot(hx_list, error_values, label=tau_rule)
+            ax.plot(hx_list, error_values, marker="x", linestyle='', label=f"{sig_dict[sigma]} using {tau_rule}")
             if draw_fit:
                 fit, label = fits[sigma][tau_rule]
                 ax.plot(hx_list, fit, color='red', linestyle='dashed', label=f"fit: {label}")
