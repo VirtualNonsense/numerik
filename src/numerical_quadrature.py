@@ -51,6 +51,36 @@ def quad_newton_cotes(f: Callable[[float], float], a: float, b: float, n: int, w
     return sq.sum()
 
 
+def quad_gauss(f: Callable[[float], float], a: float, b: float, n: int):
+    """
+    Gauß Quadratur based on https://de.wikipedia.org/wiki/Gau%C3%9F-Quadratur
+    :param f:
+    :param a:
+    :param b:
+    :param n:
+    :return:
+    """
+    bma_2 = (b-a)/2
+    bpa_2 = (b+a)/2
+    if n == 1:
+        x = [0]
+        alpha = [2]
+    elif n == 2:
+        x = [-np.sqrt(1 / 3), np.sqrt(1 / 3)]
+        alpha = [1, 1]
+    elif n == 3:
+        x = [-np.sqrt(3 / 5), 0, np.sqrt(3 / 5)]
+        alpha = [5 / 9, 8 / 9, 5 / 9]
+    else:
+        raise Exception("n must be between 1, 2, or 3")
+    tmp_sum = 0
+    for i in range(n):
+        xi = x[i]
+        ai = alpha[i]
+        tmp_sum += f(bma_2 * xi + bpa_2) * ai
+    return bma_2 * tmp_sum
+
+
 if __name__ == '__main__':
     def f(x: float) -> float:
         return x * x
@@ -58,7 +88,7 @@ if __name__ == '__main__':
 
     a = 0
     b = 2
-    n = 1
+    n = 3
 
     real_value = 1 / 3 * b * b * b - 1 / 3 * a * a * a
 
@@ -67,6 +97,7 @@ if __name__ == '__main__':
     simps = quad_simpson(f, a, b, n)
     milne = quad_milne(f, a, b, n)
     weddle = quad_weddle(f, a, b, n)
+    gauss = quad_gauss(f, a, b, n)
 
     print(f"real value: {real_value}\n"
           f"mittel: {mittel}, {real_value - mittel}\n"
@@ -74,4 +105,5 @@ if __name__ == '__main__':
           f"simps: {simps}, {real_value - simps}\n"
           f"milne: {milne}, {real_value - milne}\n"
           f"weddle: {weddle}, {real_value - weddle}\n"
+          f"gauss: {weddle}, {real_value - gauss}\n"
           )
