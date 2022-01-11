@@ -2,6 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 
 from typing import *
+from scipy.integrate import quad
 from numpy.typing import *
 
 from boundary_condition import *
@@ -59,6 +60,84 @@ def RwpFem1d(
         amount of nodes
     :return:
     """
+    pass
+
+
+def lin_elem(k, q, f, rbr, rbl, in_typ, n_e):
+    def phi(x_i, index):
+        if index == 0:
+            return 1 - x_i
+        return x_i
+    k_i = np.zeros(n_e)
+    f_i = np.zeros(n_e)
+    F = lambda x_i: (rbr - rbl) * x_i + rbl
+    tmp = [-1, 1]
+    hi = abs(rbr - rbl)
+    if in_typ == 0:
+        for i in range(n_e):
+            fun2 = lambda x_i: f(F(x_i) * phi(x_i, i))
+            f_i[i] = hi * quad(f, 0, 1)
+
+
+
+def fem_bc_solver(
+        x_git: ArrayLike,
+        k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        boundaries: Tuple[BoundaryCondition, BoundaryCondition],
+        el_typ: int,
+        in_typ: int) -> Tuple[ArrayLike, ArrayLike]:
+    """
+    1 dimensional fem solver vor boundary condition problems
+
+    :param x_git: Grid points [x0, ..., xN]
+    :param k: diffusion equation
+    :param r: convection equation
+    :param q: reaction equation
+    :param f: right side
+    :param boundaries: Boundary conditions
+        0: left boundary
+        1: right boundary
+        see subclasses for details
+    :param el_typ:
+        1: linear approach
+        2: cubic approach
+    :param in_typ:
+        amount of nodes
+    :return:
+        0:
+    """
+    # preparing variables
+    m_e = len(x_git) - 1
+    n_g = el_typ * m_e + 1
+    x_kno = np.zeros(n_g)
+    u_kno = np.zeros(n_g)
+    k_h = np.zeros(shape=[n_g, n_g])
+    f_h = np.zeros(n_g)
+
+    kn_el = np.zeros(shape=[m_e, 5])
+    kn_el[:, 0] = el_typ
+    kn_el[:, 1] = in_typ
+
+    if el_typ == 1:
+        x_kno = x_git
+        for i in range(m_e):
+            kn_el[i, 2] = i
+            kn_el[i, 3] = i + 1
+    elif el_typ == 2:
+        kn_el[:, 3] = np.array([i for i in range(1, n_g - 2, 2)])
+        kn_el[:, 3] = np.array([i for i in range(2, n_g - 1, 2)])
+        kn_el[:, 3] = np.array([i for i in range(3, n_g, 2)])
+        j = 0
+        for i in range(m_e):
+            x_kno[j] = x_git[i]
+            x_kno[j + 1] = (x_git[i + 1] - x_git[i]) / 2 + x_git[i]
+            x_kno[j + 2] = x_git[i + 1]
+            j += 2
+    for i in range(m_e):
+        pass
 
 
 if __name__ == '__main__':
