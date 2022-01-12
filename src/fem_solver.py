@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from typing import *
 from scipy.integrate import quad
+from numerical_quadrature import quad_gauss
 from numpy.typing import *
 
 from boundary_condition import *
@@ -63,20 +64,32 @@ def RwpFem1d(
     pass
 
 
-def lin_elem(k, q, f, rbr, rbl, in_typ, n_e):
+def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
     def phi(x_i, index):
         if index == 0:
             return 1 - x_i
         return x_i
-    k_i = np.zeros(n_e)
+
+    k_i = np.zeros(shape=[n_e, n_e])
     f_i = np.zeros(n_e)
     F = lambda x_i: (rbr - rbl) * x_i + rbl
     tmp = [-1, 1]
     hi = abs(rbr - rbl)
     if in_typ == 0:
-        for i in range(n_e):
-            fun2 = lambda x_i: f(F(x_i) * phi(x_i, i))
-            f_i[i] = hi * quad(f, 0, 1)
+        for a in range(n_e):
+            fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
+            f_i[a] = hi * quad(fun_2, 0, 1)
+
+            for b in range(n_e):
+                fun = lambda x_i: k(F(x_i)) / np.square(hi) * tmp[a] * tmp[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
+                k_i[a, b] = hi * quad(fun, 0, 1)
+        return k_i, f_i
+    for a in range(n_e):
+        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
+        f_i[a] = hi * quad_gauss(fun_2, -1, 1, n=in_typ)
+        for b in range(n_e):
+            fun = lambda x_i: k(F(x_i)) / np.square(hi) * tmp[a] * tmp[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
+            k_i[a, b] = hi * quad_gauss(fun, -1, 1, in_typ)
 
 
 
