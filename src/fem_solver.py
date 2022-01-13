@@ -75,21 +75,16 @@ def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
     F = lambda x_i: (rbr - rbl) * x_i + rbl
     tmp = [-1, 1]
     hi = abs(rbr - rbl)
+    integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
     if in_typ == 0:
-        for a in range(n_e):
-            fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
-            f_i[a] = hi * quad(fun_2, 0, 1)
-
-            for b in range(n_e):
-                fun = lambda x_i: k(F(x_i)) / np.square(hi) * tmp[a] * tmp[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
-                k_i[a, b] = hi * quad(fun, 0, 1)
-        return k_i, f_i
+        integrate = lambda function: quad(function, 0, 1)
     for a in range(n_e):
         fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
-        f_i[a] = hi * quad_gauss(fun_2, -1, 1, n=in_typ)
+        f_i[a] = hi * integrate(fun_2)
         for b in range(n_e):
             fun = lambda x_i: k(F(x_i)) / np.square(hi) * tmp[a] * tmp[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
-            k_i[a, b] = hi * quad_gauss(fun, -1, 1, in_typ)
+            k_i[a, b] = hi * integrate(fun)
+    return k_i, f_i
 
 
 
