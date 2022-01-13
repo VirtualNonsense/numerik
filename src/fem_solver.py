@@ -65,6 +65,18 @@ def RwpFem1d(
 
 
 def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
+    """
+
+    :param k:
+    :param q:
+    :param f:
+    :param rbr:
+    :param rbl:
+    :param in_typ:
+    :param n_e:
+    :return:
+    """
+
     def phi(x_i, index):
         if index == 0:
             return 1 - x_i
@@ -73,7 +85,7 @@ def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
     k_i = np.zeros(shape=[n_e, n_e])
     f_i = np.zeros(n_e)
     F = lambda x_i: (rbr - rbl) * x_i + rbl
-    tmp = [-1, 1]
+    phi_2 = [-1, 1]
     hi = abs(rbr - rbl)
     integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
     if in_typ == 0:
@@ -82,7 +94,7 @@ def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
         fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
         f_i[a] = hi * integrate(fun_2)
         for b in range(n_e):
-            fun = lambda x_i: k(F(x_i)) / np.square(hi) * tmp[a] * tmp[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
+            fun = lambda x_i: k(F(x_i)) / np.square(hi) * phi_2[a] * phi_2[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
             k_i[a, b] = hi * integrate(fun)
     return k_i, f_i
 
