@@ -99,6 +99,49 @@ def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
     return k_i, f_i
 
 
+def quad_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
+    """
+
+    :param k:
+    :param q:
+    :param f:
+    :param rbr:
+    :param rbl:
+    :param in_typ:
+    :param n_e:
+    :return:
+    """
+
+    def phi(x_i: float, index: int) -> float:
+        if index == 0:
+            return (2 * x_i - 1) * (x_i - 1)
+        if index == 1:
+            return 4 * x_i * (1 - x_i)
+        return x_i * (2 * x_i - 1)
+
+    def phi_2(x_i: float, index: int) -> float:
+        if index == 0:
+            return 4 * x_i - 3
+        if index == 1:
+            return 4 - 8 * x_i
+        return 4 * x_i - 1
+
+    k_i = np.zeros(shape=[n_e, n_e])
+    f_i = np.zeros(n_e)
+    F = lambda x_i: (rbr - rbl) * x_i + rbl
+    h_i = np.abs(rbr - rbl)
+    integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
+    if in_typ == 0:
+        integrate = lambda function: quad(function, 0, 1)
+    for a in range(n_e):
+        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
+        f_i[a] = h_i * integrate(fun_2)
+        for b in range(n_e):
+            fun = lambda x_i: k(F(x_i)) / np.square(h_i) * phi_2(x_i, a) * phi_2(x_i, b) + q(F(x_i)) * phi(x_i, a) * phi(
+                x_i, b)
+            k_i[a, b] = h_i * integrate(fun)
+    return k_i, f_i
+
 
 def fem_bc_solver(
         x_git: ArrayLike,
