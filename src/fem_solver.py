@@ -5,6 +5,7 @@ from typing import *
 from scipy.integrate import quad
 from numerical_quadrature import quad_gauss
 from numpy.typing import *
+from numpy.linalg import solve
 
 from boundary_condition import *
 
@@ -28,40 +29,6 @@ class FEMProblem:
 
     def f(self, x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
         return -self.k_udx_dx(x) + self.r(x) * self.u_dx(x) + self.q(x) * self.u(x)
-
-
-def RwpFem1d(
-        xGit,
-        k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        rba: Tuple[int, float, float],
-        rbb: Tuple[int, float, float],
-        eltyp: int,
-        intyp: int) -> Tuple[ArrayLike, ArrayLike]:
-    """
-    :param xGit: Grid points [x0, ..., xN]
-    :param k: diffusion equation
-    :param r: convection equation
-    :param q: reaction equation
-    :param f: right side
-    :param rba: [type, beta, value]
-        type == 1: Dirchlet-RB
-        type == 2: Neumann-RB
-        type == 3: Robin-RB
-    :param rbb: [type, beta, value]
-        type == 1: Dirchlet-RB
-        type == 2: Neumann-RB
-        type == 3: Robin-RB
-    :param eltyp:
-        1: linear approach
-        2: cubic approach
-    :param intyp:
-        amount of nodes
-    :return:
-    """
-    pass
 
 
 def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
@@ -137,19 +104,21 @@ def quad_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
         fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
         f_i[a] = h_i * integrate(fun_2)
         for b in range(n_e):
-            fun = lambda x_i: k(F(x_i)) / np.square(h_i) * phi_2(x_i, a) * phi_2(x_i, b) + q(F(x_i)) * phi(x_i, a) * phi(
+            fun = lambda x_i: k(F(x_i)) / np.square(h_i) * phi_2(x_i, a) * phi_2(x_i, b) + q(F(x_i)) * phi(x_i,
+                                                                                                           a) * phi(
                 x_i, b)
             k_i[a, b] = h_i * integrate(fun)
     return k_i, f_i
 
 
-def fem_bc_solver(
+def rwp_fem_1d(
         x_git: ArrayLike,
         k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        boundaries: Tuple[BoundaryCondition, BoundaryCondition],
+        rba: Tuple[int, float, float],
+        rbb: Tuple[int, float, float],
         el_typ: int,
         in_typ: int) -> Tuple[ArrayLike, ArrayLike]:
     """
@@ -160,17 +129,22 @@ def fem_bc_solver(
     :param r: convection equation
     :param q: reaction equation
     :param f: right side
-    :param boundaries: Boundary conditions
-        0: left boundary
-        1: right boundary
-        see subclasses for details
+    :param rba: [type, beta, value]
+        type == 1: Dirchlet-RB
+        type == 2: Neumann-RB
+        type == 3: Robin-RB
+    :param rbb: [type, beta, value]
+        type == 1: Dirchlet-RB
+        type == 2: Neumann-RB
+        type == 3: Robin-RB
     :param el_typ:
         1: linear approach
         2: cubic approach
     :param in_typ:
         amount of nodes
     :return:
-        0:
+        0: u_kno
+        1: x_kno
     """
     # preparing variables
     m_e = len(x_git) - 1
@@ -190,17 +164,79 @@ def fem_bc_solver(
             kn_el[i, 2] = i
             kn_el[i, 3] = i + 1
     elif el_typ == 2:
-        kn_el[:, 3] = np.array([i for i in range(1, n_g - 2, 2)])
+        kn_el[:, 2] = np.array([i for i in range(1, n_g - 2, 2)])
         kn_el[:, 3] = np.array([i for i in range(2, n_g - 1, 2)])
-        kn_el[:, 3] = np.array([i for i in range(3, n_g, 2)])
+        kn_el[:, 4] = np.array([i for i in range(3, n_g, 2)])
         j = 0
         for i in range(m_e):
             x_kno[j] = x_git[i]
             x_kno[j + 1] = (x_git[i + 1] - x_git[i]) / 2 + x_git[i]
             x_kno[j + 2] = x_git[i + 1]
             j += 2
-    for i in range(m_e):
-        pass
+
+    n_e = el_typ + 1
+    elem = lambda rbr, lbr: quad_elem(k, q, f, rbr, lbr, kn_el[0, 1], n_e)
+    get_rb = lambda i: (x_kno[kn_el[i, 4]], x_kno[kn_el[i, 2]])
+    if el_typ == 1:
+        get_rb = lambda i: (x_kno[kn_el[i, 3]], x_kno[kn_el[i, 2]])
+        elem = lambda rbr, lbr: lin_elem(k, q, f, rbr, lbr, kn_el[0, 1], n_e)
+
+    for i in range(n_e):
+        rbr, lbr = get_rb(i)
+        k_i, f_i = elem(rbr, lbr)
+        for a in range(n_e):
+            r = kn_el[i, 2 + a]
+            f_h[r] += f_i[a]
+
+            for b in range(n_e):
+                s = kn_el[i, 2 + b]
+                k_h[r, s] += k_i[a, b]
+
+    # handle robin bc
+    if rba[0] == 3:
+        k_h[0, 0] += rba[1]
+        f_h[0] += rba[2]
+    if rbb[0] == 3:
+        k_h[n_g, n_g] += rbb[1]
+        f_h[n_g] += rbb[2]
+
+    # handle neumann bc
+    if rba[0] == 2:
+        f_h[0] += rba[2]
+    if rbb[0] == 2:
+        f_h[n_g] += rbb[2]
+
+    # handle dirichlet bc
+    if rba[0] == 1:
+        u_kno[0] = rba[3]
+        k_h2 = k_h
+        k_h2[0, :] = 0
+        f_h2 = f_h
+        f_h2[0] = 0
+        f_h = f_h2 - k_h2@u_kno
+
+        f_h[0] = rba[2]
+        k_h[0, 0] = 1
+        k_h[1:n_g, 0] = 0
+        k_h[0, 1:n_g] = 0
+
+    if rbb[0] == 1:
+        u_kno[n_g] = rbb[3]
+        tmp = u_kno[0]
+        u_kno[0] = 0
+        k_h2 = k_h
+        k_h2[n_g, :] = 0
+        f_h2 = f_h
+        f_h2[n_g] = 0
+        f_h = f_h2 - k_h2@u_kno
+
+        f_h[n_g] = rba[2]
+        k_h[n_g, n_g] = 1
+        k_h[1:n_g, n_g] = 0
+        k_h[n_g, 1:n_g] = 0
+        u_kno[0] = tmp
+    u_kno = solve(k_h, f_h)
+    return u_kno, x_kno
 
 
 if __name__ == '__main__':
