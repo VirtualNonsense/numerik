@@ -142,7 +142,7 @@ def quad_elem(
 
 
 def rwp_fem_1d(
-        x_git: ArrayLike,
+        x_grid: ArrayLike,
         k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
@@ -154,7 +154,7 @@ def rwp_fem_1d(
     """
     1 dimensional fem solver vor boundary condition problems
 
-    :param x_git: Grid points [x0, ..., xN]
+    :param x_grid: Grid points [x0, ..., xN]
     :param k: diffusion equation
     :param r: convection equation
     :param q: reaction equation
@@ -184,7 +184,7 @@ def rwp_fem_1d(
     # preparing variables
 
     """amount of finite elements (amount of spaces between grid nodes)"""
-    m_e = len(x_git) - 1
+    m_e = len(x_grid) - 1
 
     """Dimension of K_h. Amount of p nodes"""
     n_g = el_typ * m_e + 1
@@ -211,7 +211,7 @@ def rwp_fem_1d(
     0            1            2            3            4
     el_typ       in_typ       P^e = 1      P^e = 2      P^e = 3 (will remain empty if el_typ = 1)
     """
-    kn_el = np.zeros(shape=[m_e, 5])
+    kn_el = np.zeros(shape=[m_e, 5], dtype=int)
     kn_el[:, 0] = el_typ
     kn_el[:, 1] = in_typ
 
@@ -219,21 +219,21 @@ def rwp_fem_1d(
     # setting up node table and nodes
     if el_typ == 1:
         # returning x_git in this case
-        x_kno = x_git
+        x_kno = x_grid
         for i in range(m_e):
             kn_el[i, 2] = i
             kn_el[i, 3] = i + 1
     elif el_typ == 2:
-        kn_el[:, 2] = np.array([i for i in range(0, n_g - 2, 2)])
-        kn_el[:, 3] = np.array([i for i in range(1, n_g - 1, 2)])
-        kn_el[:, 4] = np.array([i for i in range(2, n_g, 2)])
+        kn_el[:, 2] = np.array([i for i in range(0, n_g - 2, 2)], dtype=int)
+        kn_el[:, 3] = np.array([i for i in range(1, n_g - 1, 2)], dtype=int)
+        kn_el[:, 4] = np.array([i for i in range(2, n_g, 2)], dtype=int)
 
         # calculating "in between grid points"
         j = 0
         for i in range(m_e):
-            x_kno[j] = x_git[i]
-            x_kno[j + 1] = (x_git[i + 1] - x_git[i]) / 2 + x_git[i]
-            x_kno[j + 2] = x_git[i + 1]
+            x_kno[j] = x_grid[i]
+            x_kno[j + 1] = (x_grid[i + 1] - x_grid[i]) / 2 + x_grid[i]
+            x_kno[j + 2] = x_grid[i + 1]
             j += 2
 
     ####################################################################################################################
@@ -274,7 +274,7 @@ def rwp_fem_1d(
 
     # dirichlet bc
     if rba[0] == 1:
-        u_kno[0] = rba[3]
+        u_kno[0] = rba[2]
         k_h2 = k_h
         k_h2[0, :] = 0
         f_h2 = f_h
@@ -282,12 +282,12 @@ def rwp_fem_1d(
         f_h = f_h2 - k_h2 @ u_kno
 
         f_h[0] = rba[2]
+        k_h[:, 0] = 0
+        k_h[0, :] = 0
         k_h[0, 0] = 1
-        k_h[1:, 0] = 0
-        k_h[0, 1:] = 0
 
     if rbb[0] == 1:
-        u_kno[-1] = rbb[3]
+        u_kno[-1] = rbb[2]
         tmp = u_kno[0]
         u_kno[0] = 0
         k_h2 = k_h
@@ -297,9 +297,9 @@ def rwp_fem_1d(
         f_h = f_h2 - k_h2 @ u_kno
 
         f_h[-1] = rba[2]
+        k_h[:, -1] = 0
+        k_h[-1, :] = 0
         k_h[-1, -1] = 1
-        k_h[1:, -1] = 0
-        k_h[-1, 1:] = 0
         u_kno[0] = tmp
 
     # neumann bc
