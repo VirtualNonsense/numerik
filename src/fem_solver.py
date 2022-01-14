@@ -145,22 +145,44 @@ def rwp_fem_1d(
             0: use default integration from numpy
             1 - 3 use quad_gauss
     :return:
-        0: u_kno
-        1: x_kno
+        0: u_kno: approx. solution
+        1: x_kno: node values
+            el_typ == 1: u_kno will be equal to x_grid
+            el_typ == 2: u_know will contain more points than x_grid
     """
     # preparing variables
+
+    """amount of finite elements (amount of spaces between grid nodes)"""
     m_e = len(x_git) - 1
+
+    """Dimension of K_h. Amount of p nodes"""
     n_g = el_typ * m_e + 1
     x_kno = np.zeros(n_g)
     u_kno = np.zeros(n_g)
-    k_h = np.zeros(shape=[n_g, n_g])
+
+    """
+    Matrix that will be used to solve for u (K_h * u_h = f_h). shape: n_g, n_g
+    """
+    k_h: np.ndarray = np.zeros(shape=[n_g, n_g])
+
+    """
+    Vector that will be used to solve for u(K_h * u_h = f_h)
+    """
     f_h = np.zeros(n_g)
 
+    """
+    this table contains the global indexes of 
+    columns:
+    0            1            2            3            4
+    el_typ       in_typ       P^e = 1      P^e = 2      P^e = 3 (will remain empty if el_typ = 1)
+    """
     kn_el = np.zeros(shape=[m_e, 5])
     kn_el[:, 0] = el_typ
     kn_el[:, 1] = in_typ
 
+    # setting up node table and nodes
     if el_typ == 1:
+        # returning x_git in this case
         x_kno = x_git
         for i in range(m_e):
             kn_el[i, 2] = i
@@ -176,7 +198,10 @@ def rwp_fem_1d(
             x_kno[j + 2] = x_git[i + 1]
             j += 2
 
+    # calculating k_h and f_h
     n_e = el_typ + 1
+
+    # configuration for main loop
     elem = lambda rbr, lbr: quad_elem(k, q, f, rbr, lbr, kn_el[0, 1], n_e)
     get_rb = lambda i: (x_kno[kn_el[i, 4]], x_kno[kn_el[i, 2]])
     if el_typ == 1:
