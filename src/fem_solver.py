@@ -178,6 +178,7 @@ def rwp_fem_1d(
             el_typ == 1: u_kno will be equal to x_grid
             el_typ == 2: u_know will contain more points than x_grid
     """
+    ####################################################################################################################
     # preparing variables
 
     """amount of finite elements (amount of spaces between grid nodes)"""
@@ -212,6 +213,7 @@ def rwp_fem_1d(
     kn_el[:, 0] = el_typ
     kn_el[:, 1] = in_typ
 
+    ####################################################################################################################
     # setting up node table and nodes
     if el_typ == 1:
         # returning x_git in this case
@@ -232,6 +234,7 @@ def rwp_fem_1d(
             x_kno[j + 2] = x_git[i + 1]
             j += 2
 
+    ####################################################################################################################
     # calculating k_h and f_h
     """
     dimension of K^i_h
@@ -264,6 +267,8 @@ def rwp_fem_1d(
                 global_column = kn_el[i, 2 + column]
                 k_h[global_row, global_column] += k_i[row, column]
 
+    ####################################################################################################################
+    # boundary conditions
     # handle robin bc
     if rba[0] == 3:
         k_h[0, 0] += rba[1]
@@ -307,9 +312,10 @@ def rwp_fem_1d(
         k_h[1:n_g, n_g] = 0
         k_h[n_g, 1:n_g] = 0
         u_kno[0] = tmp
+
+    ####################################################################################################################
+    # solve equations
     u_kno = solve(k_h, f_h)
     return u_kno, x_kno
 
 
-if __name__ == '__main__':
-    pass
