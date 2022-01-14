@@ -67,7 +67,7 @@ def lin_elem(
 
     def phi(xi: float, index: int) -> float:
         """
-        linear approach
+        linear approach (for reference interval [0, 1])
         :param xi:
         :param index:
         :return:
@@ -113,7 +113,7 @@ def quad_elem(
 
     def phi(xi: float, index: int) -> float:
         """
-        cubic approach
+        cubic approach (for reference interval [0, 1])
         :param xi:
         :param index:
         :return:
