@@ -86,28 +86,6 @@ def lin_elem(
         if index == 0:
             return -1
         return 1
-    # init return tensors
-    # k_i = np.zeros(shape=[n_e, n_e])
-    # f_i = np.zeros(n_e)
-    #
-    # """function used to transfer xi element of [0, 1] into [x_i_1, x_i]]"""
-    # F = lambda xi: (right_boundary - left_boundary) * xi + left_boundary
-    #
-    # """distance between rbr and rbl"""
-    # h_i = np.abs(right_boundary - left_boundary)
-    #
-    # # setting integration method
-    # integrate = lambda function: quad_gauss(function, 0, 1, n=in_typ)
-    # if in_typ == 0:
-    #     integrate = lambda function: quad(function, 0, 1)
-    # for row in range(n_e):
-    #     fun_2 = lambda xi: f(F(xi)) * phi(xi, row)
-    #     f_i[row] = h_i * integrate(fun_2)
-    #     for column in range(n_e):
-    #         fun = lambda xi: k(F(xi)) / np.square(h_i) * phi_dx(xi, row) * phi_dx(xi, column) \
-    #                          + r(f(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
-    #                          + q(F(xi)) * phi(xi, row) * phi(xi, column)
-    #         k_i[row, column] = h_i * integrate(fun)
     return _elem(phi, phi_dx, k, r, q, f, right_boundary, left_boundary, in_typ, n_e)
 
 
@@ -158,29 +136,6 @@ def quad_elem(
         if index == 1:
             return 4 - 8 * xi
         return 4 * xi - 1
-
-    # init return tensors
-    # k_i = np.zeros(shape=[n_e, n_e])
-    # f_i = np.zeros(n_e)
-    #
-    # """function used to transfer xi element of [0, 1] into [x_i_1, x_i]]"""
-    # F = lambda xi: (right_boundary - left_boundary) * xi + left_boundary
-    #
-    # """distance between rbr and rbl"""
-    # h_i = np.abs(right_boundary - left_boundary)
-    #
-    # # setting integration method
-    # integrate = lambda function: quad_gauss(function, 0, 1, n=in_typ)
-    # if in_typ == 0:
-    #     integrate = lambda function: quad(function, 0, 1)
-    # for row in range(n_e):
-    #     fun_2 = lambda xi: f(F(xi)) * phi(xi, row)
-    #     f_i[row] = h_i * integrate(fun_2)
-    #     for column in range(n_e):
-    #         fun = lambda xi: k(F(xi)) / np.square(h_i) * phi_dx(xi, row) * phi_dx(xi, column) \
-    #                          + r(f(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
-    #                          + q(F(xi)) * phi(xi, row) * phi(xi, column)
-    #         k_i[row, column] = h_i * integrate(fun)
     return _elem(phi, phi_dx, k, r, q, f, right_boundary, left_boundary, in_typ, n_e)
 
 
