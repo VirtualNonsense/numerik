@@ -57,12 +57,12 @@ def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
     integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
     if in_typ == 0:
         integrate = lambda function: quad(function, 0, 1)
-    for a in range(n_e):
-        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
-        f_i[a] = hi * integrate(fun_2)
-        for b in range(n_e):
-            fun = lambda x_i: k(F(x_i)) / np.square(hi) * phi_2[a] * phi_2[b] + q(F(x_i)) * phi(x_i, a) * phi(x_i, b)
-            k_i[a, b] = hi * integrate(fun)
+    for alpha in range(n_e):
+        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, alpha)
+        f_i[alpha] = hi * integrate(fun_2)
+        for beta in range(n_e):
+            fun = lambda x_i: k(F(x_i)) / np.square(hi) * phi_2[alpha] * phi_2[beta] + q(F(x_i)) * phi(x_i, alpha) * phi(x_i, beta)
+            k_i[alpha, beta] = hi * integrate(fun)
     return k_i, f_i
 
 
@@ -100,14 +100,14 @@ def quad_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
     integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
     if in_typ == 0:
         integrate = lambda function: quad(function, 0, 1)
-    for a in range(n_e):
-        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, a)
-        f_i[a] = h_i * integrate(fun_2)
-        for b in range(n_e):
-            fun = lambda x_i: k(F(x_i)) / np.square(h_i) * phi_2(x_i, a) * phi_2(x_i, b) + q(F(x_i)) * phi(x_i,
-                                                                                                           a) * phi(
-                x_i, b)
-            k_i[a, b] = h_i * integrate(fun)
+    for alpha in range(n_e):
+        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, alpha)
+        f_i[alpha] = h_i * integrate(fun_2)
+        for beta in range(n_e):
+            fun = lambda x_i: k(F(x_i)) / np.square(h_i) * phi_2(x_i, alpha) * phi_2(x_i, beta) + q(F(x_i)) * phi(x_i,
+                                                                                                           alpha) * phi(
+                x_i, beta)
+            k_i[alpha, beta] = h_i * integrate(fun)
     return k_i, f_i
 
 
