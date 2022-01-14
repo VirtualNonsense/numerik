@@ -7,105 +7,181 @@ from numpy.typing import *
 from numpy.linalg import solve
 
 
-@dataclass
-class FEMProblem:
-    label: str
-    interval: Tuple[float, float]
-    u: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-    u_dx: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-    u_dx2: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-
-    k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-    k_dx: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-    r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-    q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-
-    k_udx_dx: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]]
-
-    boundary: Tuple[BoundaryCondition, BoundaryCondition]
-
-    def f(self, x: Union[float, ArrayLike]) -> Union[float, ArrayLike]:
-        return -self.k_udx_dx(x) + self.r(x) * self.u_dx(x) + self.q(x) * self.u(x)
-
-
-def lin_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
-    """
-
-    :param k:
-    :param q:
-    :param f:
-    :param rbr:
-    :param rbl:
-    :param in_typ:
-    :param n_e:
-    :return:
-    """
-
-    def phi(x_i, index):
-        if index == 0:
-            return 1 - x_i
-        return x_i
-
+def _elem(
+        phi: Callable[[float, int], float],
+        phi_dx: Callable[[float, int], float],
+        k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        right_boundary,
+        left_boundary,
+        in_typ,
+        n_e):
+    # init return tensors
     k_i = np.zeros(shape=[n_e, n_e])
     f_i = np.zeros(n_e)
-    F = lambda x_i: (rbr - rbl) * x_i + rbl
-    phi_2 = [-1, 1]
-    hi = abs(rbr - rbl)
-    integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
+
+    """function used to transfer xi element of [0, 1] into [x_i_1, x_i]]"""
+    F = lambda xi: (right_boundary - left_boundary) * xi + left_boundary
+
+    """distance between rbr and rbl"""
+    h_i = np.abs(right_boundary - left_boundary)
+
+    # setting integration method
+    integrate = lambda function: quad_gauss(function, 0, 1, n=in_typ)
     if in_typ == 0:
         integrate = lambda function: quad(function, 0, 1)
-    for alpha in range(n_e):
-        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, alpha)
-        f_i[alpha] = hi * integrate(fun_2)
-        for beta in range(n_e):
-            fun = lambda x_i: k(F(x_i)) / np.square(hi) * phi_2[alpha] * phi_2[beta] + q(F(x_i)) * phi(x_i, alpha) * phi(x_i, beta)
-            k_i[alpha, beta] = hi * integrate(fun)
+    for row in range(n_e):
+        fun_2 = lambda xi: f(F(xi)) * phi(xi, row)
+        f_i[row] = h_i * integrate(fun_2)
+        for column in range(n_e):
+            fun = lambda xi: k(F(xi)) / np.square(h_i) * phi_dx(xi, row) * phi_dx(xi, column) \
+                             + r(f(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
+                             + q(F(xi)) * phi(xi, row) * phi(xi, column)
+            k_i[row, column] = h_i * integrate(fun)
     return k_i, f_i
 
 
-def quad_elem(k, q, f, rbr, rbl, in_typ, n_e) -> Tuple[ArrayLike, ArrayLike]:
+def lin_elem(
+        k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        right_boundary,
+        left_boundary,
+        in_typ,
+        n_e) -> Tuple[ArrayLike, ArrayLike]:
     """
-
-    :param k:
-    :param q:
-    :param f:
-    :param rbr:
-    :param rbl:
+    Constructing block matrix k_i and vector f_i using the linear approach
+    :param k: diffusion equation
+    :param r: convection equation
+    :param q: reaction equation
+    :param f: right side
+    :param right_boundary: x_i, right boundary of current element
+    :param left_boundary: x_(i-1), left boundary of current element
     :param in_typ:
     :param n_e:
-    :return:
+    :return: K_i, f_i
     """
 
-    def phi(x_i: float, index: int) -> float:
+    def phi(xi: float, index: int) -> float:
+        """
+        linear approach
+        :param xi:
+        :param index:
+        :return:
+        """
         if index == 0:
-            return (2 * x_i - 1) * (x_i - 1)
-        if index == 1:
-            return 4 * x_i * (1 - x_i)
-        return x_i * (2 * x_i - 1)
+            return 1 - xi
+        return xi
 
-    def phi_2(x_i: float, index: int) -> float:
+    def phi_dx(xi: float, index: int) -> float:
+        """
+        weak derivation of phi
+        :param xi:
+        :param index:
+        :return:
+        """
         if index == 0:
-            return 4 * x_i - 3
-        if index == 1:
-            return 4 - 8 * x_i
-        return 4 * x_i - 1
+            return -1
+        return 1
+    # init return tensors
+    # k_i = np.zeros(shape=[n_e, n_e])
+    # f_i = np.zeros(n_e)
+    #
+    # """function used to transfer xi element of [0, 1] into [x_i_1, x_i]]"""
+    # F = lambda xi: (right_boundary - left_boundary) * xi + left_boundary
+    #
+    # """distance between rbr and rbl"""
+    # h_i = np.abs(right_boundary - left_boundary)
+    #
+    # # setting integration method
+    # integrate = lambda function: quad_gauss(function, 0, 1, n=in_typ)
+    # if in_typ == 0:
+    #     integrate = lambda function: quad(function, 0, 1)
+    # for row in range(n_e):
+    #     fun_2 = lambda xi: f(F(xi)) * phi(xi, row)
+    #     f_i[row] = h_i * integrate(fun_2)
+    #     for column in range(n_e):
+    #         fun = lambda xi: k(F(xi)) / np.square(h_i) * phi_dx(xi, row) * phi_dx(xi, column) \
+    #                          + r(f(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
+    #                          + q(F(xi)) * phi(xi, row) * phi(xi, column)
+    #         k_i[row, column] = h_i * integrate(fun)
+    return _elem(phi, phi_dx, k, r, q, f, right_boundary, left_boundary, in_typ, n_e)
 
-    k_i = np.zeros(shape=[n_e, n_e])
-    f_i = np.zeros(n_e)
-    F = lambda x_i: (rbr - rbl) * x_i + rbl
-    h_i = np.abs(rbr - rbl)
-    integrate = lambda function: quad_gauss(function, -1, 1, n=in_typ)
-    if in_typ == 0:
-        integrate = lambda function: quad(function, 0, 1)
-    for alpha in range(n_e):
-        fun_2 = lambda x_i: f(F(x_i)) * phi(x_i, alpha)
-        f_i[alpha] = h_i * integrate(fun_2)
-        for beta in range(n_e):
-            fun = lambda x_i: k(F(x_i)) / np.square(h_i) * phi_2(x_i, alpha) * phi_2(x_i, beta) + q(F(x_i)) * phi(x_i,
-                                                                                                           alpha) * phi(
-                x_i, beta)
-            k_i[alpha, beta] = h_i * integrate(fun)
-    return k_i, f_i
+
+def quad_elem(
+        k: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
+        right_boundary,
+        left_boundary,
+        in_typ,
+        n_e) -> Tuple[ArrayLike, ArrayLike]:
+    """
+    Constructing block matrix k_i and vector f_i using the linear approach
+    :param k: diffusion equation
+    :param r: convection equation
+    :param q: reaction equation
+    :param f: right side
+    :param right_boundary: x_i, right boundary of current element
+    :param left_boundary: x_(i-1), left boundary of current element
+    :param in_typ:
+    :param n_e:
+    :return: K_i, f_i
+    """
+
+    def phi(xi: float, index: int) -> float:
+        """
+        cubic approach
+        :param xi:
+        :param index:
+        :return:
+        """
+        if index == 0:
+            return (2 * xi - 1) * (xi - 1)
+        if index == 1:
+            return 4 * xi * (1 - xi)
+        return xi * (2 * xi - 1)
+
+    def phi_dx(xi: float, index: int) -> float:
+        """
+        weak derivation of phi
+        :param xi:
+        :param index:
+        :return:
+        """
+        if index == 0:
+            return 4 * xi - 3
+        if index == 1:
+            return 4 - 8 * xi
+        return 4 * xi - 1
+
+    # init return tensors
+    # k_i = np.zeros(shape=[n_e, n_e])
+    # f_i = np.zeros(n_e)
+    #
+    # """function used to transfer xi element of [0, 1] into [x_i_1, x_i]]"""
+    # F = lambda xi: (right_boundary - left_boundary) * xi + left_boundary
+    #
+    # """distance between rbr and rbl"""
+    # h_i = np.abs(right_boundary - left_boundary)
+    #
+    # # setting integration method
+    # integrate = lambda function: quad_gauss(function, 0, 1, n=in_typ)
+    # if in_typ == 0:
+    #     integrate = lambda function: quad(function, 0, 1)
+    # for row in range(n_e):
+    #     fun_2 = lambda xi: f(F(xi)) * phi(xi, row)
+    #     f_i[row] = h_i * integrate(fun_2)
+    #     for column in range(n_e):
+    #         fun = lambda xi: k(F(xi)) / np.square(h_i) * phi_dx(xi, row) * phi_dx(xi, column) \
+    #                          + r(f(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
+    #                          + q(F(xi)) * phi(xi, row) * phi(xi, column)
+    #         k_i[row, column] = h_i * integrate(fun)
+    return _elem(phi, phi_dx, k, r, q, f, right_boundary, left_boundary, in_typ, n_e)
 
 
 def rwp_fem_1d(
@@ -154,7 +230,11 @@ def rwp_fem_1d(
 
     """Dimension of K_h. Amount of p nodes"""
     n_g = el_typ * m_e + 1
+
+    """"""
     x_kno = np.zeros(n_g)
+
+    """"""
     u_kno = np.zeros(n_g)
 
     """
@@ -185,9 +265,11 @@ def rwp_fem_1d(
             kn_el[i, 2] = i
             kn_el[i, 3] = i + 1
     elif el_typ == 2:
-        kn_el[:, 2] = np.array([i for i in range(1, n_g - 2, 2)])
-        kn_el[:, 3] = np.array([i for i in range(2, n_g - 1, 2)])
-        kn_el[:, 4] = np.array([i for i in range(3, n_g, 2)])
+        kn_el[:, 2] = np.array([i for i in range(0, n_g - 2, 2)])
+        kn_el[:, 3] = np.array([i for i in range(1, n_g - 1, 2)])
+        kn_el[:, 4] = np.array([i for i in range(2, n_g, 2)])
+
+        # calculating "in between grid points"
         j = 0
         for i in range(m_e):
             x_kno[j] = x_git[i]
@@ -196,25 +278,36 @@ def rwp_fem_1d(
             j += 2
 
     # calculating k_h and f_h
+    """
+    dimension of K^i_h
+    el_typ == 1: 2
+    el_typ == 2: 3
+    """
     n_e = el_typ + 1
 
-    # configuration for main loop
-    elem = lambda rbr, lbr: quad_elem(k, q, f, rbr, lbr, kn_el[0, 1], n_e)
-    get_rb = lambda i: (x_kno[kn_el[i, 4]], x_kno[kn_el[i, 2]])
+    elem = lambda x_i, x_i_1: quad_elem(k, r, q, f, x_i, x_i_1, kn_el[0, 1], n_e)
+    get_rb = lambda element_index: (x_kno[kn_el[element_index, 4]], x_kno[kn_el[element_index, 2]])
     if el_typ == 1:
-        get_rb = lambda i: (x_kno[kn_el[i, 3]], x_kno[kn_el[i, 2]])
-        elem = lambda rbr, lbr: lin_elem(k, q, f, rbr, lbr, kn_el[0, 1], n_e)
+        get_rb = lambda element_index: (x_kno[kn_el[element_index, 3]], x_kno[kn_el[element_index, 2]])
+        elem = lambda x_i, x_i_1: lin_elem(k, r, q, f, x_i, x_i_1, kn_el[0, 1], n_e)
 
-    for i in range(n_e):
-        rbr, lbr = get_rb(i)
-        k_i, f_i = elem(rbr, lbr)
-        for a in range(n_e):
-            r = kn_el[i, 2 + a]
-            f_h[r] += f_i[a]
+    for i in range(m_e):
+        # get boundaries
+        x_i, x_i_1 = get_rb(i)
 
-            for b in range(n_e):
-                s = kn_el[i, 2 + b]
-                k_h[r, s] += k_i[a, b]
+        # get block matrix and right side
+        k_i, f_i = elem(x_i, x_i_1)
+
+        # patch matrix and vector into f_h and k_h
+        for row in range(n_e):
+            # extracting global row index from look up table (+2 to account for first and second column)
+            global_row = kn_el[i, 2 + row]
+            f_h[global_row] += f_i[row]
+
+            for column in range(n_e):
+                # extracting global column index from look up table (+2 to account for first and second column)
+                global_column = kn_el[i, 2 + column]
+                k_h[global_row, global_column] += k_i[row, column]
 
     # handle robin bc
     if rba[0] == 3:
@@ -237,7 +330,7 @@ def rwp_fem_1d(
         k_h2[0, :] = 0
         f_h2 = f_h
         f_h2[0] = 0
-        f_h = f_h2 - k_h2@u_kno
+        f_h = f_h2 - k_h2 @ u_kno
 
         f_h[0] = rba[2]
         k_h[0, 0] = 1
@@ -252,7 +345,7 @@ def rwp_fem_1d(
         k_h2[n_g, :] = 0
         f_h2 = f_h
         f_h2[n_g] = 0
-        f_h = f_h2 - k_h2@u_kno
+        f_h = f_h2 - k_h2 @ u_kno
 
         f_h[n_g] = rba[2]
         k_h[n_g, n_g] = 1
