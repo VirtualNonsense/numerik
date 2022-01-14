@@ -141,7 +141,9 @@ def rwp_fem_1d(
         1: linear approach
         2: cubic approach
     :param in_typ:
-        amount of nodes
+        integration typ:
+            0: use default integration from numpy
+            1 - 3 use quad_gauss
     :return:
         0: u_kno
         1: x_kno
