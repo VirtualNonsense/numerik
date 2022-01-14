@@ -10,14 +10,17 @@ if __name__ == '__main__':
 
     u_abcd = lambda x: np.exp(-x) + np.exp(x) + 1
 
-    x_grid = np.array([i * 0.2 for i in range(5)])
+    a = 0
+    b = 1
+    steps = 9
+    x_grid = np.linspace(a, b, steps, endpoint=True)
     k = lambda x: 1
     r = lambda x: 1
     q = lambda x: 1
     f = lambda x: np.exp(x) - np.exp(-x) + 1
     left_boundary = (1, 0, u_abcd(x_grid[0]))
     right_boundary = (1, 0, u_abcd(x_grid[-1]))
-
+    print(x_grid)
     u, x = rwp_fem_1d(x_grid=x_grid,
                       k=k,
                       r=r,
@@ -29,7 +32,7 @@ if __name__ == '__main__':
                       in_typ=1)
     fig: Figure = plt.figure("a")
     ax: Axes = fig.add_subplot()
-    ax.plot(x, u, label="approx")
+    ax.plot(x, u, linestyle="", marker="x", label="approx")
     ax.plot(x, u_abcd(x), label="solution")
     ax.legend()
     plt.show()

@@ -296,7 +296,7 @@ def rwp_fem_1d(
         f_h2[-1] = 0
         f_h = f_h2 - k_h2 @ u_kno
 
-        f_h[-1] = rba[2]
+        f_h[-1] = rbb[2]
         k_h[:, -1] = 0
         k_h[-1, :] = 0
         k_h[-1, -1] = 1
