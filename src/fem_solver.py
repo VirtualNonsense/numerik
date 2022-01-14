@@ -25,7 +25,7 @@ def _elem(
     """function used to transfer xi element of [0, 1] into [x_i_1, x_i]]"""
     F = lambda xi: (right_boundary - left_boundary) * xi + left_boundary
 
-    """distance between rbr and rbl"""
+    """distance between right boundary and left boundary"""
     h_i = np.abs(right_boundary - left_boundary)
 
     # setting integration method
@@ -86,6 +86,7 @@ def lin_elem(
         if index == 0:
             return -1
         return 1
+
     return _elem(phi, phi_dx, k, r, q, f, right_boundary, left_boundary, in_typ, n_e)
 
 
@@ -136,6 +137,7 @@ def quad_elem(
         if index == 1:
             return 4 - 8 * xi
         return 4 * xi - 1
+
     return _elem(phi, phi_dx, k, r, q, f, right_boundary, left_boundary, in_typ, n_e)
 
 
@@ -269,21 +271,8 @@ def rwp_fem_1d(
 
     ####################################################################################################################
     # boundary conditions
-    # handle robin bc
-    if rba[0] == 3:
-        k_h[0, 0] += rba[1]
-        f_h[0] += rba[2]
-    if rbb[0] == 3:
-        k_h[n_g, n_g] += rbb[1]
-        f_h[n_g] += rbb[2]
 
-    # handle neumann bc
-    if rba[0] == 2:
-        f_h[0] += rba[2]
-    if rbb[0] == 2:
-        f_h[n_g] += rbb[2]
-
-    # handle dirichlet bc
+    # dirichlet bc
     if rba[0] == 1:
         u_kno[0] = rba[3]
         k_h2 = k_h
@@ -294,28 +283,40 @@ def rwp_fem_1d(
 
         f_h[0] = rba[2]
         k_h[0, 0] = 1
-        k_h[1:n_g, 0] = 0
-        k_h[0, 1:n_g] = 0
+        k_h[1:, 0] = 0
+        k_h[0, 1:] = 0
 
     if rbb[0] == 1:
-        u_kno[n_g] = rbb[3]
+        u_kno[-1] = rbb[3]
         tmp = u_kno[0]
         u_kno[0] = 0
         k_h2 = k_h
-        k_h2[n_g, :] = 0
+        k_h2[-1, :] = 0
         f_h2 = f_h
-        f_h2[n_g] = 0
+        f_h2[-1] = 0
         f_h = f_h2 - k_h2 @ u_kno
 
-        f_h[n_g] = rba[2]
-        k_h[n_g, n_g] = 1
-        k_h[1:n_g, n_g] = 0
-        k_h[n_g, 1:n_g] = 0
+        f_h[-1] = rba[2]
+        k_h[-1, -1] = 1
+        k_h[1:, -1] = 0
+        k_h[-1, 1:] = 0
         u_kno[0] = tmp
+
+    # neumann bc
+    if rba[0] == 2:
+        f_h[0] += rba[2]
+    if rbb[0] == 2:
+        f_h[-1] += rbb[2]
+
+    # robin bc
+    if rba[0] == 3:
+        k_h[0, 0] += rba[1]
+        f_h[0] += rba[2]
+    if rbb[0] == 3:
+        k_h[-1, -1] += rbb[1]
+        f_h[-1] += rbb[2]
 
     ####################################################################################################################
     # solve equations
     u_kno = solve(k_h, f_h)
     return u_kno, x_kno
-
-
