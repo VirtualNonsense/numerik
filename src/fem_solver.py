@@ -14,10 +14,10 @@ def _elem(
         r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        right_boundary,
-        left_boundary,
-        in_typ,
-        n_e):
+        right_boundary: float,
+        left_boundary: float,
+        in_typ: int,
+        n_e: int):
     # init return tensors
     k_i = np.zeros(shape=[n_e, n_e])
     f_i = np.zeros(n_e)
@@ -48,10 +48,10 @@ def lin_elem(
         r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        right_boundary,
-        left_boundary,
-        in_typ,
-        n_e) -> Tuple[ArrayLike, ArrayLike]:
+        right_boundary: float,
+        left_boundary: float,
+        in_typ: int,
+        n_e: int) -> Tuple[ArrayLike, ArrayLike]:
     """
     Constructing block matrix k_i and vector f_i using the linear approach
     :param k: diffusion equation
@@ -95,10 +95,10 @@ def quad_elem(
         r: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         q: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
         f: Callable[[Union[ArrayLike, float]], Union[ArrayLike, float]],
-        right_boundary,
-        left_boundary,
-        in_typ,
-        n_e) -> Tuple[ArrayLike, ArrayLike]:
+        right_boundary: float,
+        left_boundary: float,
+        in_typ: int,
+        n_e: int) -> Tuple[ArrayLike, ArrayLike]:
     """
     Constructing block matrix k_i and vector f_i using the linear approach
     :param k: diffusion equation
