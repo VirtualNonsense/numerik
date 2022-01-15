@@ -70,21 +70,23 @@ if __name__ == '__main__':
     from scipy.special import erf
 
     ####################################################################################################################
-    # a
-    c_a = 100
+    # shared by a and b
     x_grid = np.linspace(0, 1, num=10, endpoint=True)
     k = lambda x: 1
     r = lambda x: 0
     q = lambda x: 0
-    f = lambda x: (2 * np.power(c_a, 3) * (x - .5)) / np.square(1 + np.square(c_a) * np.square(x - .5))
-    u_a = lambda x: np.arctan(c_a * (x - .5)) + np.arctan(c_a / 2) * (1 - 2 * x)
     rba = (1, 0, 0)
     rbb = (1, 0, 0)
     el_typ = 1
     in_typ = 0
-
     epsilon = 1e-4
     alpha = .8
+    ####################################################################################################################
+    # a
+    c_a = 100
+    f = lambda x: (2 * np.power(c_a, 3) * (x - .5)) / np.square(1 + np.square(c_a) * np.square(x - .5))
+    u_a = lambda x: np.arctan(c_a * (x - .5)) + np.arctan(c_a / 2) * (1 - 2 * x)
+
     u_adap_approx_a, x_adap_a = _adaptivity_solver(x_grid, k, r, q, f, rba, rbb, el_typ, in_typ, epsilon, alpha)
     u_approx_a, x_a = rwp_fem_1d(x_grid, k, r, q, f, rba, rbb, el_typ, in_typ)
 
