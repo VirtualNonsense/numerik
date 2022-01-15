@@ -31,7 +31,7 @@ def _elem(
     # setting integration method
     integrate = lambda function: quad_gauss(function, 0, 1, n=in_typ)
     if in_typ == 0:
-        integrate = lambda function: quad(function, 0, 1)
+        integrate = lambda function: quad(function, 0, 1)[0]
     for row in range(n_e):
         fun_2 = lambda xi: f(F(xi)) * phi(xi, row)
         f_i[row] = h_i * integrate(fun_2)
