@@ -245,11 +245,25 @@ def rwp_fem_1d(
     """
     n_e = el_typ + 1
 
-    elem = lambda x_i, x_i_1: quad_elem(k, r, q, f, x_i, x_i_1, kn_el[0, 1], n_e)
+    elem = lambda x_i, x_i_1: quad_elem(k,
+                                        r,
+                                        q,
+                                        f,
+                                        right_boundary=x_i,
+                                        left_boundary=x_i_1,
+                                        in_typ=kn_el[0, 1],
+                                        n_e=n_e)
     get_rb = lambda element_index: (x_kno[kn_el[element_index, 4]], x_kno[kn_el[element_index, 2]])
     if el_typ == 1:
         get_rb = lambda element_index: (x_kno[kn_el[element_index, 3]], x_kno[kn_el[element_index, 2]])
-        elem = lambda x_i, x_i_1: lin_elem(k, r, q, f, x_i, x_i_1, kn_el[0, 1], n_e)
+        elem = lambda x_i, x_i_1: lin_elem(k,
+                                           r,
+                                           q,
+                                           f,
+                                           right_boundary=x_i,
+                                           left_boundary=x_i_1,
+                                           in_typ=kn_el[0, 1],
+                                           n_e=n_e)
 
     for i in range(m_e):
         # get boundaries
