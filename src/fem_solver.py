@@ -240,8 +240,6 @@ def rwp_fem_1d(
     # calculating k_h and f_h
     """
     dimension of K^i_h
-    el_typ == 1: 2
-    el_typ == 2: 3
     """
     n_e = el_typ + 1
 
