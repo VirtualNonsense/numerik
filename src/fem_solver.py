@@ -287,30 +287,24 @@ def rwp_fem_1d(
     # dirichlet bc
     if rba[0] == 1:
         u_kno[0] = rba[2]
-        k_h2 = k_h
-        k_h2[0, :] = 0
-        f_h2 = f_h
-        f_h2[0] = 0
-        f_h = f_h2 - k_h2 @ u_kno
+        k_h[0, :] = 0
+        f_h[0] = 0
+        f_h -= k_h @ u_kno
 
         f_h[0] = rba[2]
         k_h[:, 0] = 0
-        k_h[0, :] = 0
         k_h[0, 0] = 1
 
     if rbb[0] == 1:
         u_kno[-1] = rbb[2]
         tmp = u_kno[0]
         u_kno[0] = 0
-        k_h2 = k_h
-        k_h2[-1, :] = 0
-        f_h2 = f_h
-        f_h2[-1] = 0
-        f_h = f_h2 - k_h2 @ u_kno
+        k_h[-1, :] = 0
+        f_h[-1] = 0
+        f_h -= k_h @ u_kno
 
         f_h[-1] = rbb[2]
         k_h[:, -1] = 0
-        k_h[-1, :] = 0
         k_h[-1, -1] = 1
         u_kno[0] = tmp
 
