@@ -37,7 +37,7 @@ def _elem(
         f_i[row] = h_i * integrate(fun_2)
         for column in range(n_e):
             fun = lambda xi: k(F(xi)) / np.square(h_i) * phi_dx(xi, row) * phi_dx(xi, column) \
-                             + r(f(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
+                             + r(F(xi)) * phi_dx(xi, column) * phi(xi, row) * 1 / h_i \
                              + q(F(xi)) * phi(xi, row) * phi(xi, column)
             k_i[row, column] = h_i * integrate(fun)
     return k_i, f_i
