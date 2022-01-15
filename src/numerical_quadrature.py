@@ -60,8 +60,11 @@ def quad_gauss(f: Callable[[float], float], a: float, b: float, n: int):
     :param n:
     :return:
     """
-    bma_2 = (b-a)/2
-    bpa_2 = (b+a)/2
+
+    """half the distance"""
+    ab_half_distance = (b-a)/2
+    """mean of a and b"""
+    ab_mean = (b+a)/2
     if n == 1:
         x = [0]
         alpha = [2]
@@ -77,8 +80,8 @@ def quad_gauss(f: Callable[[float], float], a: float, b: float, n: int):
     for i in range(n):
         xi = x[i]
         ai = alpha[i]
-        tmp_sum += f(bma_2 * xi + bpa_2) * ai
-    return bma_2 * tmp_sum
+        tmp_sum += f(ab_half_distance * xi + ab_mean) * ai
+    return ab_half_distance * tmp_sum
 
 
 if __name__ == '__main__':
