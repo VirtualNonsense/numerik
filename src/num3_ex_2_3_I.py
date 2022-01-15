@@ -16,15 +16,18 @@ if __name__ == '__main__':
     u_abcd_dx = lambda x: -np.exp(-x) + np.exp(x)
 
     x_grid_abc = np.array([0, .1, .3, .4, .45, .6, .8, .88, .9, 1])
+    a = x_grid_abc[0]
+    b = x_grid_abc[-1]
     el_type = 2
-    in_type = 2
+    in_type = 3
+    fig.suptitle(f"exercise 2.2 using el_type: {el_type}, in_type: {in_type}")
 
     k = lambda x: 1
     r = lambda x: 1
     q = lambda x: 1
     f = lambda x: np.exp(x) - np.exp(-x) + 1
-    left_boundary = (1, 0, u_abcd(x_grid_abc[0]))
-    right_boundary = (1, 0, u_abcd(x_grid_abc[-1]))
+    left_boundary = (1, 0, u_abcd(a))
+    right_boundary = (1, 0, u_abcd(b))
     u_a, x_a = rwp_fem_1d(x_grid=x_grid_abc,
                           k=k,
                           r=r,
@@ -40,7 +43,7 @@ if __name__ == '__main__':
     ax.plot(x_a, u_abcd(x_a), label="solution")
     ax.legend()
 
-    right_boundary = (3, 1, k(x_grid_abc[-1]) * u_abcd_dx(x_grid_abc[-1]) + u_abcd(x_grid_abc[-1]))
+    right_boundary = (3, 1, k(b) * u_abcd_dx(b) + u_abcd(b))
     u_b, x_b = rwp_fem_1d(x_grid=x_grid_abc,
                           k=k,
                           r=r,
@@ -60,7 +63,7 @@ if __name__ == '__main__':
     r = lambda x: k(x)
     q = lambda x: k(x)
     f = lambda x: x * (np.exp(x) - np.exp(-x)) + 1 + x
-    right_boundary = (3, 1, k(x_grid_abc[-1]) * u_abcd_dx(x_grid_abc[-1]) + u_abcd(x_grid_abc[-1]))
+    right_boundary = (3, 1, k(b) * u_abcd_dx(b) + u_abcd(b))
     u_c, x_c = rwp_fem_1d(x_grid=x_grid_abc,
                           k=k,
                           r=r,
@@ -77,8 +80,10 @@ if __name__ == '__main__':
     ax.legend()
 
     x_grid_d = x_grid_abc - 1 / 2
-    left_boundary = (3, 0, -k(x_grid_d[0] * u_abcd_dx(x_grid_d[0])))
-    right_boundary = (3, 1, k(x_grid_d[-1]) * u_abcd_dx(x_grid_d[-1]) + u_abcd(x_grid_d[-1]))
+    a = x_grid_d[0]
+    b = x_grid_d[-1]
+    left_boundary = (3, 0, -k(a) * u_abcd_dx(a))
+    right_boundary = (3, 1, k(b) * u_abcd_dx(b) + u_abcd(b))
     u_d, x_d = rwp_fem_1d(x_grid=x_grid_d,
                           k=k,
                           r=r,
