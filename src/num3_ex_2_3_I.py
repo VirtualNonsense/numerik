@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     ####################################################################################################################
     # problems from 2.3
-    alpha = 1 / 4
+    alpha = 13 / 4
     u_e = lambda x: np.power(x, alpha)
     u_e_dx = lambda x: alpha * np.power(x, alpha - 1)
     u_e_dx2 = lambda x: alpha * (alpha - 1) * np.power(x, alpha - 2)
