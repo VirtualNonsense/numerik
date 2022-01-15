@@ -189,10 +189,10 @@ def rwp_fem_1d(
     """Dimension of K_h. Amount of p nodes"""
     n_g = el_typ * m_e + 1
 
-    """"""
+    """node values"""
     x_kno = np.zeros(n_g)
 
-    """"""
+    """approx. solution"""
     u_kno = np.zeros(n_g)
 
     """
